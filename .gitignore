@@ -7,3 +7,4 @@ start/
 .env
 .env.*
 *.pem
+future.md
