@@ -1,11 +1,12 @@
 use crate::adapters::c::compiler_check;
 use crate::adapters::toolchain;
 use crate::adapters::traits::{DoctorCheck, LanguageAdapter};
-use crate::core::environment::Environment;
+use crate::core::environment::{Environment, ShellEnvironment};
 use crate::core::errors::Result;
 use crate::core::project::Project;
 use crate::core::runtime::Runtime;
 use crate::process::PreparedCommand;
+use std::collections::HashMap;
 
 pub mod plain;
 
@@ -47,6 +48,13 @@ impl LanguageAdapter for CppAdapter {
         extra_args: &[String],
     ) -> Result<PreparedCommand> {
         toolchain::resolve_env_command(project, command, extra_args)
+    }
+
+    fn shell_environment(&self, project: &Project) -> Result<ShellEnvironment> {
+        Ok(ShellEnvironment {
+            path_prepend: vec![project.environment_bin_dir()],
+            extra_env: HashMap::new(),
+        })
     }
 
     fn ensure_artifacts(&self, project: &Project) -> Result<bool> {

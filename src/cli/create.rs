@@ -154,8 +154,11 @@ pub fn execute(
     printer.section("Next:");
     printer.hint_command(&format!("cd {project_name}"));
     printer.hint_command("manscript run");
+    printer.hint_command("manscript shell");
     printer.blank();
-    printer.muted("  Keep using manscript run — you do not need to change PATH.");
+    printer.muted(
+        "  Use manscript run, or manscript shell for ad-hoc tools — no activation required.",
+    );
     Ok(())
 }
 

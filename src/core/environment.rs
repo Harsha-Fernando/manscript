@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -24,6 +25,12 @@ pub struct Environment {
     pub root: PathBuf,
     pub bin_dir: PathBuf,
     pub kind: EnvironmentKind,
+}
+
+#[derive(Debug, Clone)]
+pub struct ShellEnvironment {
+    pub path_prepend: Vec<PathBuf>,
+    pub extra_env: HashMap<String, String>,
 }
 
 impl Environment {

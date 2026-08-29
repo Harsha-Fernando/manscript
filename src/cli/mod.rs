@@ -15,6 +15,7 @@ mod init;
 mod install;
 mod run;
 mod setup;
+mod shell;
 mod test;
 
 #[derive(Parser, Debug)]
@@ -24,7 +25,7 @@ mod test;
     styles = clap_styles(),
     about = "From zero to a running app, with fewer ritual sacrifices to PATH.",
     after_help = "Tip: `doctor` is a ManScript command, not a shell command.\n  manscript doctor\n  manscript -h",
-    long_about = "ManScript prepares isolated development environments from project requirements.\n\nIt does not disable Python, Django, Ruby, or Rails. Those tools still exist.\nManScript just runs the copies inside this project's environment so you do not\nhave to activate a venv or remember the framework's favorite incantation.\n\n  manscript create django myproject\n  cd myproject\n  manscript run"
+    long_about = "ManScript prepares isolated development environments from project requirements.\n\nIt does not disable Python, Django, Ruby, or Rails. Those tools still exist.\nManScript just runs the copies inside this project's environment so you do not\nhave to activate a venv or remember the framework's favorite incantation.\n\n  manscript create django myproject\n  cd myproject\n  manscript run\n  manscript shell"
 )]
 pub struct Cli {
     /// Assume yes for confirmation prompts (CI / non-interactive)
@@ -70,6 +71,8 @@ pub enum Commands {
     Doctor,
     /// Show this project's paths and interpreters
     Env,
+    /// Open an interactive shell with the project environment on PATH
+    Shell,
     /// Print a Tab-completion script for your shell
     Completions {
         /// bash, zsh, fish, powershell, or elvish
@@ -119,6 +122,7 @@ pub fn dispatch() -> Result<()> {
         Some(Commands::Build { args }) => build::execute(&registry, &args),
         Some(Commands::Doctor) => doctor::execute(&registry),
         Some(Commands::Env) => env::execute(&registry),
+        Some(Commands::Shell) => shell::execute(&registry),
         Some(Commands::Completions { shell }) => completions::execute(shell),
     }
 }

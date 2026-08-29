@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use crate::adapters::traits::{DoctorCheck, LanguageAdapter};
-use crate::core::environment::{Environment, EnvironmentKind};
+use crate::core::environment::{Environment, EnvironmentKind, ShellEnvironment};
 use crate::core::errors::{ManscriptError, Result};
 use crate::core::project::Project;
 use crate::core::runtime::Runtime;
@@ -109,6 +109,13 @@ impl LanguageAdapter for PythonAdapter {
             cwd: project.root.clone(),
             extra_env: HashMap::new(),
             path_prepend: vec![project.environment_bin_dir()],
+        })
+    }
+
+    fn shell_environment(&self, project: &Project) -> Result<ShellEnvironment> {
+        Ok(ShellEnvironment {
+            path_prepend: vec![project.environment_bin_dir()],
+            extra_env: HashMap::new(),
         })
     }
 

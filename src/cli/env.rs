@@ -40,10 +40,12 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
         printer.muted("  Prefer:");
         printer.hint_command("manscript run");
         printer.hint_command("manscript test");
+        printer.hint_command("manscript shell");
     } else {
         printer.blank();
         printer.muted("  Prefer:");
         printer.hint_command("manscript run");
+        printer.hint_command("manscript shell");
     }
 
     printer.blank();

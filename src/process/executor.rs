@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
@@ -29,15 +30,10 @@ impl Executor {
             cmd.env(k, v);
         }
         if !prepared.path_prepend.is_empty() {
-            let mut parts: Vec<String> = prepared
-                .path_prepend
-                .iter()
-                .map(|p| p.display().to_string())
-                .collect();
-            if let Some(existing) = std::env::var_os("PATH") {
-                parts.push(existing.to_string_lossy().into_owned());
-            }
-            cmd.env("PATH", parts.join(path_separator()));
+            cmd.env(
+                "PATH",
+                prepend_path(&prepared.path_prepend, std::env::var_os("PATH").as_deref())?,
+            );
         }
         Ok(cmd)
     }
@@ -82,12 +78,14 @@ impl Default for Executor {
     }
 }
 
-fn path_separator() -> &'static str {
-    if cfg!(windows) {
-        ";"
-    } else {
-        ":"
+pub(crate) fn prepend_path(path_prepend: &[PathBuf], existing: Option<&OsStr>) -> Result<OsString> {
+    let mut paths = path_prepend.to_vec();
+    if let Some(existing) = existing {
+        paths.extend(std::env::split_paths(existing));
     }
+    std::env::join_paths(paths).map_err(|err| {
+        ManscriptError::Message(format!("Could not construct the project PATH.\n\n{err}"))
+    })
 }
 
 pub fn validate_program(program: &Path) -> Result<()> {
@@ -173,6 +171,7 @@ pub fn split_command_line(input: &str) -> Result<Vec<String>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ffi::OsStr;
 
     #[test]
     fn splits_simple() {
@@ -190,5 +189,30 @@ mod tests {
     #[test]
     fn rejects_shell_meta() {
         assert!(split_command_line("python && rm -rf /").is_err());
+    }
+
+    #[test]
+    fn prepends_project_paths_before_existing_path() {
+        let project_bin = PathBuf::from("project-bin");
+        let existing = std::env::join_paths(["system-bin", "other-bin"]).unwrap();
+        let path = prepend_path(&[project_bin.clone()], Some(OsStr::new(&existing))).unwrap();
+        let parts: Vec<PathBuf> = std::env::split_paths(&path).collect();
+
+        assert_eq!(
+            parts,
+            vec![
+                project_bin,
+                PathBuf::from("system-bin"),
+                PathBuf::from("other-bin")
+            ]
+        );
+    }
+
+    #[test]
+    fn preserves_existing_path_without_prefixes() {
+        let existing = std::env::join_paths(["system-bin", "other-bin"]).unwrap();
+        let path = prepend_path(&[], Some(OsStr::new(&existing))).unwrap();
+
+        assert_eq!(path, existing);
     }
 }

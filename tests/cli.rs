@@ -7,11 +7,36 @@ fn bin() -> Command {
     Command::cargo_bin("manscript").unwrap()
 }
 
+fn write_python_project(root: &std::path::Path) {
+    std::fs::write(
+        root.join("manscript.toml"),
+        r#"
+name = "ShellTest"
+[language]
+name = "python"
+version = "3.13"
+"#,
+    )
+    .unwrap();
+}
+
+#[cfg(unix)]
+fn write_shell_stub(root: &std::path::Path) -> std::path::PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+
+    let stub = root.join("shell-stub");
+    std::fs::write(&stub, "#!/bin/sh\nprintf 'CHILD_PATH=%s\\n' \"$PATH\"\n").unwrap();
+    let mut permissions = std::fs::metadata(&stub).unwrap().permissions();
+    permissions.set_mode(0o755);
+    std::fs::set_permissions(&stub, permissions).unwrap();
+    stub
+}
+
 fn has_bin(name: &str) -> bool {
     match ProcCommand::new(name).arg("--version").output() {
         Err(e) if e.kind() == ErrorKind::NotFound => false,
         Err(_) => false,
-        Ok(_) => true,
+        Ok(output) => output.status.success(),
     }
 }
 
@@ -44,8 +69,85 @@ fn help_lists_commands() {
         .stdout(predicate::str::contains("create"))
         .stdout(predicate::str::contains("doctor"))
         .stdout(predicate::str::contains("run"))
+        .stdout(predicate::str::contains("shell"))
         .stdout(predicate::str::contains("completions"))
         .stdout(predicate::str::contains("╭").not());
+}
+
+#[test]
+fn shell_help_prints() {
+    bin()
+        .args(["shell", "--help"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("INFO"))
+        .stdout(predicate::str::contains("shell"))
+        .stdout(predicate::str::contains("Usage:"));
+}
+
+#[test]
+fn shell_requires_a_manscript_project() {
+    let dir = tempfile::tempdir().unwrap();
+
+    bin()
+        .current_dir(dir.path())
+        .arg("shell")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("not a ManScript project"));
+}
+
+#[test]
+fn shell_requires_a_ready_environment() {
+    let dir = tempfile::tempdir().unwrap();
+    write_python_project(dir.path());
+
+    bin()
+        .current_dir(dir.path())
+        .arg("shell")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("environment is not ready"))
+        .stderr(predicate::str::contains("manscript setup"));
+}
+
+#[cfg(unix)]
+#[test]
+fn shell_prepends_project_bin_and_preserves_parent_environment() {
+    let dir = tempfile::tempdir().unwrap();
+    let home = tempfile::tempdir().unwrap();
+    write_python_project(dir.path());
+    let project_root = dir.path().canonicalize().unwrap();
+    let environment_bin = project_root.join(".manscript/environment/bin");
+    std::fs::create_dir_all(&environment_bin).unwrap();
+    std::fs::write(environment_bin.join("python"), "").unwrap();
+    let stub = write_shell_stub(dir.path());
+    let existing_path = std::env::join_paths(["/system-one", "/system-two"]).unwrap();
+    let expected_path = std::env::join_paths([
+        environment_bin.as_path(),
+        "/system-one".as_ref(),
+        "/system-two".as_ref(),
+    ])
+    .unwrap();
+    let parent_path = std::env::var_os("PATH");
+
+    bin()
+        .current_dir(dir.path())
+        .env("HOME", home.path())
+        .env("PATH", &existing_path)
+        .env("MANSCRIPT_SHELL", &stub)
+        .arg("shell")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(format!(
+            "CHILD_PATH={}",
+            expected_path.to_string_lossy()
+        )));
+
+    assert_eq!(std::env::var_os("PATH"), parent_path);
+    assert!(!home.path().join(".bashrc").exists());
+    assert!(!home.path().join(".zshrc").exists());
+    assert!(!home.path().join(".profile").exists());
 }
 
 #[test]
@@ -67,7 +169,7 @@ fn version_prints() {
         .assert()
         .success()
         .stdout(predicate::str::contains("INFO"))
-        .stdout(predicate::str::contains("0.1.1"));
+        .stdout(predicate::str::contains("0.1.2"));
 }
 
 #[test]

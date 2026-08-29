@@ -37,16 +37,18 @@ Python and Ruby work as **language-only** projects (`manscript create python mya
 
 Typical setup is a pile of one-off commands: install a runtime, fix `PATH`, create a venv, install packages, remember `manage.py` vs `bin/rails`. ManScript encodes those requirements in `manscript.toml` and prepares an isolated environment for you.
 
-ManScript never requires `source .venv/bin/activate`. It invokes binaries from the project environment directly.
+ManScript never requires `source .venv/bin/activate`. It can invoke binaries from the project environment directly or open a temporary project-aware child shell.
 
 ## Does ManScript turn off Python or Django?
 
 No. Your system `python`, `django-admin`, `ruby`, and `rails` stay exactly as they were.
 
-ManScript does not uninstall them or remove them from PATH. It also does not “activate” a virtualenv in your shell.
+ManScript does not uninstall them or permanently remove them from PATH. `manscript shell` changes only the environment of the child shell it launches.
 
 - `python` in the terminal → whatever your shell already had (Homebrew, pyenv, …)
 - `manscript run` → this project’s isolated interpreter and packages
+- `manscript shell` → a child shell where this project’s `python`, `pip`, `django-admin`, `ruby`, and other managed tools are first on `PATH`
+- `exit` → returns to the original terminal with its previous `PATH`
 
 See `manscript env` inside a project for the exact paths.
 
@@ -75,6 +77,7 @@ Homebrew and downloadable binaries are not part of 0.1. To remove ManScript, see
 | `manscript run` / `test` / `build` | Execute configured commands |
 | `manscript doctor` | Diagnose the machine (never mutates) |
 | `manscript env` | Print resolved environment paths |
+| `manscript shell` | Open a child shell with project-managed tools on `PATH` |
 | `manscript completions` | Print a Tab-completion script (`bash`, `zsh`, `fish`, `powershell`, `elvish`) |
 
 Use `--yes` / `-y` for non-interactive confirmation (CI).
@@ -85,7 +88,7 @@ Use `--yes` / `-y` for non-interactive confirmation (CI).
 eval "$(manscript completions zsh)"
 ```
 
-Then `manscript` + Tab lists commands (`create`, `run`, `doctor`, …). `manscript create` + Tab suggests stacks (`django`, `python`, `c`, …). Completing the word `manscript` itself is the shell completing a binary on PATH (`~/.cargo/bin`).
+Then `manscript` + Tab lists commands (`create`, `run`, `shell`, `doctor`, …). `manscript create` + Tab suggests stacks (`django`, `python`, `c`, …). Completing the word `manscript` itself is the shell completing a binary on PATH (`~/.cargo/bin`).
 
 ## How it works
 
@@ -99,6 +102,21 @@ CLI → core (project, config, registry)
 The core does not know about pip, uv, Bundler, or mise. Providers are replaceable. If a suitable system runtime exists, ManScript uses it. Otherwise it can download an isolated runtime into `~/.manscript` after confirmation (never sudo).
 
 Project isolation lives in `.manscript/environment` inside the project.
+
+### Development shell
+
+From a directory containing a `manscript.toml` file, or any child directory:
+
+```bash
+manscript shell
+which python
+python --version
+exit
+```
+
+On Unix and macOS, ManScript launches `$SHELL` (falling back to `/bin/sh`). On Windows it uses `COMSPEC` (falling back to PowerShell). The project environment bin directory is prepended only to the child process `PATH`; existing entries and environment variables are preserved. Ruby-specific Bundler and gem variables come from the Ruby adapter. ManScript does not edit `.bashrc`, `.zshrc`, profiles, or other global shell configuration.
+
+If the project environment has not been prepared, run `manscript setup`. If no `manscript.toml` is found, run the command from inside a ManScript project.
 
 ## Configuration
 
@@ -125,7 +143,7 @@ Commands are executed as argv (no shell). `sudo` and shell metacharacters are re
 
 ## Security
 
-ManScript runs subprocesses. It will not escalate privileges, silently modify system files, overwrite a non-empty project without confirmation, or send your project anywhere.
+ManScript runs subprocesses. It will not escalate privileges, silently modify system files, overwrite a non-empty project without confirmation, or send your project anywhere. Configured project commands are always parsed as argv rather than passed to a command shell. `manscript shell` is an explicit interactive-shell boundary and does not execute a configured command string.
 
 See [SECURITY.md](SECURITY.md).
 

@@ -15,6 +15,7 @@ const SUBCOMMANDS: &[&str] = &[
     "build",
     "doctor",
     "env",
+    "shell",
     "completions",
     "help",
 ];

@@ -140,6 +140,8 @@ manscript create c hello</code></pre>
       <li><code>manscript install</code> — dependencies into the project env.</li>
       <li><code>manscript run</code> / <code>test</code> / <code>build</code> — from <code>[commands]</code> in <code>manscript.toml</code>. Language-only <code>run</code> is not treated as a web server. C/C++/Java compile before run when needed.</li>
       <li><code>manscript env</code> — paths for this project.</li>
+      <li><code>manscript shell</code> — opens a child shell with this project’s managed tools first on <code>PATH</code>. Type <code>exit</code> to return to the unchanged parent shell. It never edits shell startup files.</li>
+      <li><code>manscript completions</code> — prints a Tab-completion script for your shell; setup instructions are on the <a href="install.html">Install</a> page.</li>
       <li><code>manscript init</code> — write <code>manscript.toml</code> in an existing directory.</li>
     </ul>
   </main>

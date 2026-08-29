@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use crate::adapters::traits::{DoctorCheck, LanguageAdapter};
-use crate::core::environment::{Environment, EnvironmentKind};
+use crate::core::environment::{Environment, EnvironmentKind, ShellEnvironment};
 use crate::core::errors::{ManscriptError, Result};
 use crate::core::project::Project;
 use crate::core::runtime::Runtime;
@@ -127,6 +127,14 @@ impl LanguageAdapter for RubyAdapter {
             cwd: project.root.clone(),
             extra_env: ruby_env(project, &ruby),
             path_prepend: vec![project.environment_bin_dir(), gem_bindir(&ruby)],
+        })
+    }
+
+    fn shell_environment(&self, project: &Project) -> Result<ShellEnvironment> {
+        let ruby = ruby_from_env_or_path(project)?;
+        Ok(ShellEnvironment {
+            path_prepend: vec![project.environment_bin_dir(), gem_bindir(&ruby)],
+            extra_env: ruby_env(project, &ruby),
         })
     }
 

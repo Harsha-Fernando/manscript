@@ -1,5 +1,5 @@
 use crate::config::{CommandsConfig, ProjectConfig};
-use crate::core::environment::Environment;
+use crate::core::environment::{Environment, ShellEnvironment};
 use crate::core::errors::Result;
 use crate::core::project::Project;
 use crate::core::runtime::Runtime;
@@ -68,6 +68,7 @@ pub trait LanguageAdapter: Send + Sync {
         command: &str,
         extra_args: &[String],
     ) -> Result<PreparedCommand>;
+    fn shell_environment(&self, project: &Project) -> Result<ShellEnvironment>;
     fn doctor_checks(&self) -> Vec<DoctorCheck>;
 
     /// Compile or otherwise prepare artifacts before `run` / `build`.

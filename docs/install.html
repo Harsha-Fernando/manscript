@@ -22,7 +22,7 @@
   </header>
   <main>
     <h1>Install</h1>
-    <p>0.1.1 ships as source. You install <strong>Rust</strong>, then compile ManScript with Cargo. You do not need Homebrew or Chocolatey.</p>
+    <p>0.1.2 ships as source. You install <strong>Rust</strong>, then compile ManScript with Cargo. You do not need Homebrew or Chocolatey.</p>
 
     <h2>1. Rust</h2>
     <p>Use <a href="https://rustup.rs">rustup</a>. That is the usual way to get <code>rustc</code> and <code>cargo</code>.</p>
@@ -47,20 +47,21 @@ manscript create</code></pre>
     <p>With no extra arguments, ManScript asks: language, then framework (or None), then a folder name. C, C++, and Java skip the framework question. When it finishes:</p>
     <pre><code>cd myproject
 manscript run</code></pre>
+    <p>For ad-hoc project commands, run <code>manscript shell</code>. It opens a child shell with project tools first on <code>PATH</code>; type <code>exit</code> to return to the unchanged parent terminal.</p>
     <p>Use the name you typed at the prompt, not necessarily <code>myproject</code>.</p>
     <p>Scripts and CI can skip the prompts with extra arguments, for example <code>manscript create django myproject</code>. That is optional. The usual way is still <code>manscript create</code>. Full detail: <a href="create.html">Create</a>.</p>
 
     <h2>Tab completion</h2>
     <p>Once <code>manscript</code> is on PATH, the shell can complete the binary name. To also complete commands after it, load the script for your shell (zsh is shown; also <code>bash</code>, <code>fish</code>, <code>powershell</code>, <code>elvish</code>):</p>
     <pre><code>eval "$(manscript completions zsh)"</code></pre>
-    <p>Put that line in <code>~/.zshrc</code> (or the equivalent for your shell) so it survives new terminals. Then Tab after <code>manscript</code> lists commands, and Tab after <code>manscript create</code> suggests stacks such as <code>django</code> or <code>python</code>.</p>
+    <p>Put that line in <code>~/.zshrc</code> (or the equivalent for your shell) so it survives new terminals. Then Tab after <code>manscript</code> lists commands such as <code>run</code> and <code>shell</code>, and Tab after <code>manscript create</code> suggests stacks such as <code>django</code> or <code>python</code>.</p>
 
     <h2>Update</h2>
     <p>ManScript does <strong>not</strong> update itself. There is no background updater. When a new version is published, you install it again the same way you installed it the first time.</p>
     <pre><code>cd manscript
 git pull
 cargo install --path . --force</code></pre>
-    <p><code>--force</code> is required: Cargo will not replace a binary that is already named <code>manscript</code>, even if the source changed. <code>manscript --version</code> should read 0.1.1 after this release. After a source-only change at the same version number, that is still the command.</p>
+    <p><code>--force</code> is required: Cargo will not replace a binary that is already named <code>manscript</code>, even if the source changed. <code>manscript --version</code> should read 0.1.2 after this release. After a source-only change at the same version number, that is still the command.</p>
     <p>If you later install from crates.io, it would be <code>cargo install manscript --force</code> (and a version pin if you want one). That is not the 0.1 path yet.</p>
 
     <h2>What this does not install</h2>
