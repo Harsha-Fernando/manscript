@@ -15,6 +15,23 @@ fn has_bin(name: &str) -> bool {
     }
 }
 
+/// Git-for-Windows and similar stubs ship `cc.exe` without `cc1`. `--version` is not enough.
+fn compiler_can_link(compiler: &str, source_name: &str, source: &str) -> bool {
+    let Ok(dir) = tempfile::tempdir() else {
+        return false;
+    };
+    if std::fs::write(dir.path().join(source_name), source).is_err() {
+        return false;
+    }
+    let out = if cfg!(windows) { "t.exe" } else { "t" };
+    ProcCommand::new(compiler)
+        .args(["-o", out, source_name])
+        .current_dir(dir.path())
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
+}
+
 #[test]
 fn help_lists_commands() {
     bin()
@@ -151,7 +168,7 @@ version = "3.13"
 
 #[test]
 fn create_c_language_only_when_cc_exists() {
-    if !has_bin("cc") {
+    if !compiler_can_link("cc", "t.c", "int main(void) { return 0; }\n") {
         return;
     }
     let dir = tempfile::tempdir().unwrap();
@@ -175,7 +192,7 @@ fn create_c_language_only_when_cc_exists() {
 
 #[test]
 fn create_cpp_language_only_when_cxx_exists() {
-    if !has_bin("c++") {
+    if !compiler_can_link("c++", "t.cpp", "int main() { return 0; }\n") {
         return;
     }
     let dir = tempfile::tempdir().unwrap();
