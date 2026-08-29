@@ -13,8 +13,7 @@ pub fn print_from_args(args: impl IntoIterator<Item = String>) {
 
 pub fn print_version() {
     let printer = Printer::new();
-    print_wordmark(&printer);
-    printer.info(&format!("ManScript  v{}", env!("CARGO_PKG_VERSION")));
+    printer.line(&format!("manscript {}", env!("CARGO_PKG_VERSION")));
 }
 
 /// `manscript -h` → None; `manscript create -h` / `manscript help run` → Some(cmd).
@@ -32,52 +31,67 @@ pub fn help_topic(args: impl IntoIterator<Item = String>) -> Option<String> {
 fn print_root_help() {
     let printer = Printer::new();
     let cmd = Cli::command();
-    print_wordmark(&printer);
     printer.info(&format!("ManScript  v{}", env!("CARGO_PKG_VERSION")));
     if let Some(about) = cmd.get_about() {
         printer.blank();
         printer.muted(&format!("  {about}"));
     }
 
-    printer.section("Usage:");
-    printer.hint_command("manscript [options] [command]");
-
-    let options: Vec<(&str, String)> = vec![
-        ("-y, --yes", "Assume yes for confirmation prompts".into()),
-        ("-h, --help", "Display help for a command".into()),
-        ("-V, --version", "Display this application version".into()),
-    ];
-    print_rows(&printer, "Options:", &options);
-
-    let mut commands: Vec<(String, String)> = cmd
-        .get_subcommands()
-        .filter(|s| !s.is_hide_set())
-        .map(|s| {
-            (
-                s.get_name().to_string(),
-                s.get_about().map(|a| a.to_string()).unwrap_or_default(),
-            )
-        })
-        .collect();
-    commands.sort_by(|a, b| a.0.cmp(&b.0));
-    let command_refs: Vec<(&str, String)> = commands
-        .iter()
-        .map(|(n, a)| (n.as_str(), a.clone()))
-        .collect();
-    print_rows(&printer, "Available commands:", &command_refs);
-
+    printer.section("Start here");
+    printer.muted("  Choose the one that describes your project:");
     printer.blank();
-    printer.info("Common workflows");
-    printer.muted("  Create and run a new project:");
-    printer.hint_command("manscript create django myproject");
-    printer.hint_command("cd myproject && manscript run");
+    printer.muted("  Create a new project:");
+    printer.hint_command("manscript create");
     printer.blank();
-    printer.muted("  Prepare an existing ManScript project:");
+    printer.muted("  Add ManScript to an existing project:");
+    printer.hint_command("cd your-project");
+    printer.hint_command("manscript init");
     printer.hint_command("manscript setup");
     printer.blank();
-    printer.muted("  Add something inside the current framework project:");
-    printer.hint_command("manscript create blog");
+    printer.muted("  Prepare a cloned project that already has manscript.toml:");
+    printer.hint_command("cd your-project");
+    printer.hint_command("manscript setup");
+
+    print_command_group(
+        &printer,
+        &cmd,
+        "Use your project",
+        &["run", "shell", "test", "build"],
+    );
+    print_command_group(
+        &printer,
+        &cmd,
+        "Set up your project",
+        &["create", "init", "setup", "install"],
+    );
+    print_command_group(
+        &printer,
+        &cmd,
+        "Inspect and configure",
+        &["doctor", "env", "completions"],
+    );
+
+    printer.section("Help");
+    printer.hint_command("manscript <command> --help");
+    printer.muted("    Example: manscript create --help");
     printer.blank();
+}
+
+fn print_command_group(printer: &Printer, cmd: &Command, title: &str, names: &[&str]) {
+    let rows: Vec<(&str, String)> = names
+        .iter()
+        .filter_map(|name| {
+            cmd.find_subcommand(name).map(|sub| {
+                (
+                    *name,
+                    sub.get_about()
+                        .map(|about| about.to_string())
+                        .unwrap_or_default(),
+                )
+            })
+        })
+        .collect();
+    print_rows(printer, title, &rows);
 }
 
 fn print_command_help(name: &str) {
@@ -151,15 +165,6 @@ fn usage_line(sub: &Command) -> String {
         }
     }
     parts.join(" ")
-}
-
-fn print_wordmark(printer: &Printer) {
-    printer.line("  ███╗   ███╗ █████╗ ███╗   ██╗███████╗ ██████╗██████╗ ██╗██████╗ ████████╗");
-    printer.line("  ████╗ ████║██╔══██╗████╗  ██║██╔════╝██╔════╝██╔══██╗██║██╔══██╗╚══██╔══╝");
-    printer.line("  ██╔████╔██║███████║██╔██╗ ██║███████╗██║     ██████╔╝██║██████╔╝   ██║   ");
-    printer.line("  ██║╚██╔╝██║██╔══██║██║╚██╗██║╚════██║██║     ██╔══██╗██║██╔═══╝    ██║   ");
-    printer.line("  ██║ ╚═╝ ██║██║  ██║██║ ╚████║███████║╚██████╗██║  ██║██║██║        ██║   ");
-    printer.blank();
 }
 
 fn print_rows(printer: &Printer, title: &str, rows: &[(&str, String)]) {

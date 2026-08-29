@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Install ManScript</title>
-  <meta name="description" content="Install, update, verify, and configure shell completion for ManScript 0.1.2.">
+  <meta name="description" content="Install, update, verify, and configure shell completion for ManScript 0.1.3.">
   <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
   <main id="main">
     <p class="eyebrow">Getting started</p>
     <h1>Install ManScript</h1>
-    <p class="lede">Version 0.1.2 is distributed as source. Install Rust, then let Cargo compile the <code>manscript</code> binary. Homebrew, Chocolatey, and downloadable binaries are not part of this release.</p>
+    <p class="lede">Version 0.1.3 is distributed as source. Install Rust, then let Cargo compile the <code>manscript</code> binary. Homebrew, Chocolatey, and downloadable binaries are not part of this release.</p>
 
     <h2>1. Install Rust and Cargo</h2>
     <p>Use the official installer at <a href="https://rustup.rs">rustup.rs</a>.</p>
@@ -62,11 +62,11 @@ manscript completions fish | source</code></pre>
     <p>PowerShell and Elvish are also supported. To make completion persistent, put the appropriate command in that shell's startup configuration. Tab completion covers subcommands and known <code>create</code> stack identifiers.</p>
 
     <h2>Update</h2>
-    <p>ManScript has no automatic updater. Pull the source and ask Cargo to replace the installed binary:</p>
-    <pre><code>cd /path/to/manscript
-git pull
+    <p>ManScript has no automatic updater. Open a terminal in the ManScript source folder you cloned during installation, then run:</p>
+    <pre><code>git pull
 cargo install --path . --force
 manscript --version</code></pre>
+    <p>Do not type a placeholder such as <code>/path/to/manscript</code>. The command must run from the real folder containing ManScript's <code>Cargo.toml</code>.</p>
 
     <h2>Language prerequisites</h2>
     <p>Python and Ruby can use a suitable system runtime or an isolated runtime prepared by ManScript. C and C++ require a working system compiler; Java requires a JDK 17 or newer with both <code>javac</code> and <code>java</code>. ManScript creates project shims for those toolchains but does not download a compiler or JDK.</p>

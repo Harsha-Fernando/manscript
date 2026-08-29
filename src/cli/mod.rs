@@ -4,7 +4,8 @@ use clap_complete::Shell;
 use crate::core::errors::Result;
 use crate::core::registry::default_registry;
 use crate::utils::output::{
-    clap_styles, print_clap_error, print_unknown_command, unrecognized_subcommand,
+    clap_styles, print_clap_error, print_missing_completion_shell, print_unknown_command,
+    unrecognized_subcommand,
 };
 
 mod build;
@@ -105,6 +106,16 @@ pub fn dispatch() -> Result<()> {
                 let exit_code = err.exit_code();
                 print_clap_error(&err);
                 std::process::exit(exit_code);
+            }
+            ErrorKind::MissingRequiredArgument
+                if std::env::args()
+                    .skip(1)
+                    .find(|a| !a.starts_with('-'))
+                    .as_deref()
+                    == Some("completions") =>
+            {
+                print_missing_completion_shell();
+                std::process::exit(err.exit_code());
             }
             _ => {
                 let exit_code = err.exit_code();

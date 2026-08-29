@@ -85,7 +85,7 @@ main {
 
 .site-footer {
   margin-top: 2rem;
-  padding-block: 1.5rem 5rem;
+  padding-block: 1.5rem;
   border-top: 1px solid var(--border);
   font-size: 0.86rem;
 }
@@ -250,8 +250,7 @@ a:hover {
   margin-top: 1.5rem;
 }
 
-.button,
-button.code-copy {
+.button {
   display: inline-flex;
   min-height: 2.75rem;
   padding: 0.65rem 0.95rem;
@@ -272,8 +271,7 @@ button.code-copy {
   color: var(--bg);
 }
 
-.button:hover,
-button.code-copy:hover {
+.button:hover {
   border-color: var(--accent);
   background: var(--surface-strong);
 }
@@ -344,7 +342,6 @@ button.code-copy:hover {
   margin-block: 2rem;
   padding: 1.1rem 1.25rem;
   border: 1px solid var(--accent);
-  border-left-width: 0.35rem;
   border-radius: var(--radius);
   background: var(--accent-soft);
 }
@@ -406,33 +403,47 @@ pre code {
 
 .code-block pre {
   margin: 0;
-  padding-top: 3.4rem;
+  padding: 1.7rem 1rem 1rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
-button.code-copy {
+.code-block pre:hover,
+.code-block pre:focus-visible {
+  border-color: var(--accent);
+}
+
+.code-copy-hint {
   position: absolute;
   z-index: 1;
   top: 0.45rem;
-  right: 0.45rem;
-  min-height: 2.75rem;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.78rem;
+  right: 0.65rem;
+  color: var(--muted);
+  font-family: ui-serif, Palatino, Georgia, serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.copy-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.code-block:hover .code-copy-hint,
+.code-block pre:focus-visible + .code-copy-hint {
+  color: var(--text);
 }
 
 .code-block.is-copied pre {
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+.code-block.is-copied .code-copy-hint {
+  color: var(--text);
+  font-weight: 700;
+  transform: scale(1.04);
 }
 
 .table-wrap {
@@ -473,8 +484,9 @@ tbody tr:last-child > * {
 
 blockquote {
   margin: 1rem 0;
-  padding: 0.2rem 1.2rem;
-  border-left: 0.3rem solid var(--accent);
+  padding: 0.8rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   background: var(--surface);
 }
 
@@ -484,22 +496,22 @@ blockquote p {
 }
 
 .to-top {
-  position: fixed;
-  z-index: 2;
-  right: 1rem;
-  bottom: 1rem;
-  min-height: 2.75rem;
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: 0.45rem;
-  background: var(--text);
-  color: var(--bg);
-  font: 700 0.78rem/1.2 ui-sans-serif, system-ui, sans-serif;
-  text-decoration: none;
+  display: block;
+  width: fit-content;
+  margin: 1rem auto 2rem;
+  padding: 0.5rem;
+  color: var(--muted);
+  font: 700 0.8rem/1.2 ui-sans-serif, system-ui, sans-serif;
+  text-underline-offset: 0.2em;
 }
 
 .to-top:hover {
-  color: var(--bg);
+  color: var(--text);
+}
+
+.to-top::before {
+  content: "↑";
+  margin-right: 0.35rem;
 }
 
 @media (max-width: 56rem) {
@@ -543,10 +555,6 @@ blockquote p {
     padding: 1.25rem;
   }
 
-  .to-top {
-    right: 0.6rem;
-    bottom: 0.6rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

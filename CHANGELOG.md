@@ -4,13 +4,18 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-29
+
 ### UX and documentation
 
 - Reorganized the documentation around three onboarding paths: create a new project, initialize an existing project, or set up a cloned ManScript project
 - Added complete command, configuration, troubleshooting, and development-shell guides
 - Clarified command mutation and project prerequisites, Python generator naming, single-kind generator prompts, Rails asset builds, `MANSCRIPT_HOME`, and optional uninstall cleanup
 - Standardized site navigation, accessibility metadata, skip links, responsive layouts, dark mode, focus states, and reduced-motion behavior
-- Replaced clickable code blocks with accessible copy buttons and a Clipboard API fallback
+- Kept command blocks clickable and keyboard-accessible, with clear copy feedback and a Clipboard API fallback
+- Simplified root help around new, existing, and cloned project paths; grouped commands by purpose and reduced version output to one line
+- Improved missing completion-shell and unknown-command errors without suggesting unrelated commands
+- Removed heavy vertical callout accents, replaced the floating back-to-top control, and clarified source-update instructions
 - Improved shell lifecycle messaging: the project prompt is Unix-only, missing environments are errors, and successful exit confirms that the original terminal is unchanged
 
 ## [0.1.2] - 2026-08-29

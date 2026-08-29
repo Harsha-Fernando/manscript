@@ -30,7 +30,7 @@ Every HTML page must include the same header and footer destinations, in this or
 
 Mark the current local page with `aria-current="page"`. Each page also needs a skip link, `<main id="main">`, a unique title and meta description, semantic headings, scoped table headers, and explicit image dimensions.
 
-Before submitting changes, follow every relative HTML `href` and test keyboard focus, code-copy buttons, narrow layouts, dark mode, and reduced motion.
+Before submitting changes, follow every relative HTML `href` and test keyboard focus, clickable code-copy blocks, narrow layouts, dark mode, and reduced motion.
 
 ## Deployment
 

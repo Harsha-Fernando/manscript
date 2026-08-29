@@ -491,6 +491,29 @@ pub fn print_clap_error(err: &clap::Error) {
     print_error_block(body, false);
 }
 
+pub fn print_missing_completion_shell() {
+    eprintln!();
+    eprintln_tag(
+        " ERROR ",
+        TagKind::Err,
+        "`manscript completions` needs the name of your shell.",
+        false,
+    );
+    eprintln!();
+    eprintln!("  Supported shells:");
+    eprintln!("    bash, zsh, fish, powershell, elvish");
+    eprintln!();
+    eprintln!("  Example:");
+    if stderr_color() {
+        eprintln!("    {}", "manscript completions zsh".cyan().bold());
+    } else {
+        eprintln!("    manscript completions zsh");
+    }
+    eprintln!();
+    eprintln!("  This command is optional. You only need it to enable tab completion.");
+    eprintln!();
+}
+
 pub fn print_unknown_command(name: &str) {
     eprintln!();
     eprintln_tag(
@@ -520,11 +543,14 @@ pub fn print_unknown_command(name: &str) {
 
 pub fn suggest_command(input: &str) -> Option<&'static str> {
     let input = input.to_ascii_lowercase();
+    if input.len() < 3 {
+        return None;
+    }
     SUBCOMMANDS
         .iter()
         .copied()
         .map(|cmd| (cmd, strsim::levenshtein(&input, cmd)))
-        .filter(|(_, d)| *d > 0 && *d <= 3)
+        .filter(|(_, d)| *d > 0 && *d <= 2)
         .min_by_key(|(_, d)| *d)
         .map(|(cmd, _)| cmd)
 }
@@ -585,6 +611,7 @@ mod tests {
     fn suggests_doctor() {
         assert_eq!(suggest_command("docter"), Some("doctor"));
         assert_eq!(suggest_command("create"), None);
+        assert_eq!(suggest_command("h"), None);
     }
 
     #[test]

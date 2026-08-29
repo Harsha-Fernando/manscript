@@ -46,7 +46,7 @@ build = "python -m compileall ."</code></pre>
           <tr><th scope="row"><code>language.version</code></th><td>string</td><td>Yes</td><td>Runtime version requirement used during detection and setup.</td></tr>
           <tr><th scope="row"><code>framework.name</code></th><td>string</td><td>With section</td><td><code>django</code>, <code>fastapi</code>, <code>flask</code>, <code>rails</code>, or <code>sinatra</code>.</td></tr>
           <tr><th scope="row"><code>framework.version</code></th><td>string</td><td>With section</td><td>Configured framework version.</td></tr>
-          <tr><th scope="row"><code>environment.manager</code></th><td>string</td><td>No</td><td>Records the adapter's environment strategy. Generated configs use <code>venv</code>, <code>bundler</code>, or <code>toolchain</code>. In 0.1.2, the selected language adapter controls the implementation; changing this value does not switch environment providers.</td></tr>
+          <tr><th scope="row"><code>environment.manager</code></th><td>string</td><td>No</td><td>Records the adapter's environment strategy. Generated configs use <code>venv</code>, <code>bundler</code>, or <code>toolchain</code>. In 0.1.3, the selected language adapter controls the implementation; changing this value does not switch environment providers.</td></tr>
           <tr><th scope="row"><code>runtime.provider</code></th><td>string</td><td>No</td><td>Provider preference: <code>system</code>, <code>uv</code>, or <code>mise</code> where supported. If omitted, the registry resolves a suitable provider.</td></tr>
           <tr><th scope="row"><code>commands.run</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript run</code>; run errors when absent.</td></tr>
           <tr><th scope="row"><code>commands.test</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript test</code>; absence is a successful no-op.</td></tr>
@@ -54,7 +54,7 @@ build = "python -m compileall ."</code></pre>
         </tbody>
       </table>
     </div>
-    <p>When omitted, <code>[environment]</code>, <code>[runtime]</code>, and <code>[commands]</code> deserialize to empty/default values. There is no separate lock-file schema in 0.1.2.</p>
+    <p>When omitted, <code>[environment]</code>, <code>[runtime]</code>, and <code>[commands]</code> deserialize to empty/default values. There is no separate lock-file schema in 0.1.3.</p>
 
     <h2>Command strings become argv</h2>
     <p>Configured commands look like shell text for readability, but ManScript does not run them through a shell. It splits the text into a program and arguments, resolves the program through the selected language adapter, and launches it directly.</p>

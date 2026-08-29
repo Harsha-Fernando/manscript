@@ -77,7 +77,13 @@ fn help_lists_commands() {
         .assert()
         .success()
         .stdout(predicate::str::contains("INFO"))
-        .stdout(predicate::str::contains("Available commands:"))
+        .stdout(predicate::str::contains("Start here"))
+        .stdout(predicate::str::contains("Create a new project"))
+        .stdout(predicate::str::contains(
+            "Add ManScript to an existing project",
+        ))
+        .stdout(predicate::str::contains("Prepare a cloned project"))
+        .stdout(predicate::str::contains("Use your project"))
         .stdout(predicate::str::contains("create"))
         .stdout(predicate::str::contains("doctor"))
         .stdout(predicate::str::contains("run"))
@@ -222,8 +228,7 @@ fn version_prints() {
         .arg("--version")
         .assert()
         .success()
-        .stdout(predicate::str::contains("INFO"))
-        .stdout(predicate::str::contains("0.1.2"));
+        .stdout(predicate::eq("manscript 0.1.3\n"));
 }
 
 #[test]
@@ -286,6 +291,34 @@ fn unknown_subcommand_is_friendly() {
 }
 
 #[test]
+fn short_unknown_subcommand_does_not_suggest_an_unrelated_command() {
+    bin()
+        .arg("h")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("`h` is not a ManScript command"))
+        .stderr(predicate::str::contains("Did you mean").not())
+        .stderr(predicate::str::contains("manscript --help"));
+}
+
+#[test]
+fn completions_without_a_shell_explains_the_optional_argument() {
+    bin()
+        .arg("completions")
+        .assert()
+        .code(2)
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::contains(
+            "`manscript completions` needs the name of your shell",
+        ))
+        .stderr(predicate::str::contains(
+            "bash, zsh, fish, powershell, elvish",
+        ))
+        .stderr(predicate::str::contains("manscript completions zsh"))
+        .stderr(predicate::str::contains("This command is optional"));
+}
+
+#[test]
 fn clap_errors_use_the_manscript_error_layout() {
     bin()
         .args(["completions", "unsupported-shell"])
@@ -307,7 +340,7 @@ fn no_color_help_contains_no_escape_sequences() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Available commands:"))
+        .stdout(predicate::str::contains("Start here"))
         .stdout(predicate::str::contains("\u{1b}").not());
 }
 
