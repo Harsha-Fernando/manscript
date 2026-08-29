@@ -16,15 +16,32 @@ pub fn create_toolchain_env(project: &Project, links: &[(&str, &Path)]) -> Resul
     let root = project.environment_dir();
     let bin = env_bin_dir(&root);
     ensure_dir(&bin)?;
+    let mut map = String::new();
     for (name, target) in links {
-        let dest = bin.join(exe_name(name));
-        if !is_under_root(&project.root, &dest)? {
+        let target = target
+            .canonicalize()
+            .unwrap_or_else(|_| target.to_path_buf());
+        if name.contains('=') || name.contains('\n') || name.contains('\r') {
             return Err(ManscriptError::InvalidCommand(
-                "refusing to write a toolchain shim outside the project".into(),
+                "invalid toolchain name".into(),
             ));
         }
-        link_tool(target, &dest)?;
+        map.push_str(name);
+        map.push('=');
+        map.push_str(&target.display().to_string());
+        map.push('\n');
+        #[cfg(unix)]
+        {
+            let dest = bin.join(exe_name(name));
+            if !is_under_root(&project.root, &dest)? {
+                return Err(ManscriptError::InvalidCommand(
+                    "refusing to write a toolchain shim outside the project".into(),
+                ));
+            }
+            link_tool(&target, &dest)?;
+        }
     }
+    crate::utils::filesystem::write_file(&tools_map_path(project), &map)?;
     Ok(Environment {
         bin_dir: bin,
         root,
@@ -33,8 +50,12 @@ pub fn create_toolchain_env(project: &Project, links: &[(&str, &Path)]) -> Resul
 }
 
 pub fn toolchain_ready(project: &Project, names: &[&str]) -> bool {
-    let bin = project.environment_bin_dir();
-    names.iter().all(|n| bin.join(exe_name(n)).exists())
+    let Ok(map) = read_tools_map(project) else {
+        return false;
+    };
+    names
+        .iter()
+        .all(|n| map.get(*n).is_some_and(|p| p.is_file() || p.exists()))
 }
 
 pub fn no_packages() -> Result<()> {
@@ -118,6 +139,13 @@ pub fn resolve_env_command(
 }
 
 pub fn env_tool(project: &Project, name: &str) -> Result<PathBuf> {
+    if let Ok(map) = read_tools_map(project) {
+        if let Some(path) = map.get(name) {
+            if path.exists() {
+                return Ok(path.clone());
+            }
+        }
+    }
     let path = project.environment_bin_dir().join(exe_name(name));
     if path.exists() {
         Ok(path)
@@ -126,6 +154,25 @@ pub fn env_tool(project: &Project, name: &str) -> Result<PathBuf> {
             "cannot resolve '{name}' inside the project environment."
         )))
     }
+}
+
+fn tools_map_path(project: &Project) -> PathBuf {
+    project.environment_dir().join("tools")
+}
+
+fn read_tools_map(project: &Project) -> Result<HashMap<String, PathBuf>> {
+    let text = fs::read_to_string(tools_map_path(project))?;
+    let mut map = HashMap::new();
+    for line in text.lines() {
+        let Some((k, v)) = line.split_once('=') else {
+            continue;
+        };
+        if k.is_empty() || v.is_empty() {
+            continue;
+        }
+        map.insert(k.to_string(), PathBuf::from(v));
+    }
+    Ok(map)
 }
 
 pub fn sibling_or_which(tool: &Path, name: &str) -> Result<PathBuf> {
@@ -152,6 +199,7 @@ fn is_under_root(root: &Path, path: &Path) -> Result<bool> {
     }
 }
 
+#[cfg(unix)]
 fn link_tool(target: &Path, dest: &Path) -> Result<()> {
     let target = target
         .canonicalize()
@@ -162,10 +210,6 @@ fn link_tool(target: &Path, dest: &Path) -> Result<()> {
     #[cfg(unix)]
     {
         std::os::unix::fs::symlink(&target, dest)?;
-    }
-    #[cfg(not(unix))]
-    {
-        fs::copy(&target, dest)?;
     }
     Ok(())
 }

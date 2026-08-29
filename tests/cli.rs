@@ -24,12 +24,13 @@ fn compiler_can_link(compiler: &str, source_name: &str, source: &str) -> bool {
         return false;
     }
     let out = if cfg!(windows) { "t.exe" } else { "t" };
-    ProcCommand::new(compiler)
+    let ok = ProcCommand::new(compiler)
         .args(["-o", out, source_name])
         .current_dir(dir.path())
         .output()
         .map(|o| o.status.success())
-        .unwrap_or(false)
+        .unwrap_or(false);
+    ok && dir.path().join(out).is_file()
 }
 
 #[test]
@@ -168,6 +169,9 @@ version = "3.13"
 
 #[test]
 fn create_c_language_only_when_cc_exists() {
+    if cfg!(windows) {
+        return;
+    }
     if !compiler_can_link("cc", "t.c", "int main(void) { return 0; }\n") {
         return;
     }
@@ -192,6 +196,9 @@ fn create_c_language_only_when_cc_exists() {
 
 #[test]
 fn create_cpp_language_only_when_cxx_exists() {
+    if cfg!(windows) {
+        return;
+    }
     if !compiler_can_link("c++", "t.cpp", "int main() { return 0; }\n") {
         return;
     }

@@ -57,33 +57,9 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
             let ruby = project.environment_bin_dir().join(exe_name("ruby"));
             printer.hint_command(&ruby.display().to_string());
         }
-        "c" => {
-            printer.hint_command(
-                &project
-                    .environment_bin_dir()
-                    .join(exe_name("cc"))
-                    .display()
-                    .to_string(),
-            );
-        }
-        "cpp" => {
-            printer.hint_command(
-                &project
-                    .environment_bin_dir()
-                    .join(exe_name("c++"))
-                    .display()
-                    .to_string(),
-            );
-        }
-        "java" => {
-            printer.hint_command(
-                &project
-                    .environment_bin_dir()
-                    .join(exe_name("java"))
-                    .display()
-                    .to_string(),
-            );
-        }
+        "c" => print_env_tool(&printer, &project, "cc"),
+        "cpp" => print_env_tool(&printer, &project, "c++"),
+        "java" => print_env_tool(&printer, &project, "java"),
         other => {
             printer.hint_command(other);
         }
@@ -98,4 +74,11 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn print_env_tool(printer: &Printer, project: &Project, name: &str) {
+    match crate::adapters::toolchain::env_tool(project, name) {
+        Ok(path) => printer.hint_command(&path.display().to_string()),
+        Err(_) => printer.hint_command(name),
+    }
 }
