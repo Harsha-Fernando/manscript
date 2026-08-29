@@ -39,4 +39,6 @@ To add a language later:
 - Prefer clear errors over exit codes alone.
 - Update `CHANGELOG.md` for user-visible changes.
 
+Contributions are dual-licensed under MIT or Apache-2.0, the same as the rest of this repository, unless you state otherwise.
+
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).

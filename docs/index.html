@@ -5,13 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ManScript</title>
   <meta name="description" content="From an empty folder to a running app, without PATH rituals.">
+  <link rel="icon" type="image/jpeg" href="static/manscript-logo.jpg">
+  <link rel="apple-touch-icon" href="static/manscript-logo.jpg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <p><a href="index.html">ManScript</a></p>
+    <p class="brand">
+      <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
+    </p>
     <nav>
       <a href="install.html">Install</a>
+      <a href="create.html">Create</a>
       <a href="uninstall.html">Uninstall</a>
     </nav>
   </header>
@@ -19,20 +24,12 @@
     <h1>ManScript</h1>
     <p>A language-agnostic CLI. It prepares an isolated environment from <code>manscript.toml</code> so you can go from zero to <code>manscript run</code> without activating a venv or fighting PATH.</p>
     <p>It does not replace Python, Django, Ruby, or Java. Those tools stay on your machine. ManScript runs the copies inside <em>this project’s</em> environment.</p>
-    <h2>What you get</h2>
-    <ul>
-      <li><code>create</code> — new project, or an app/module inside one</li>
-      <li>Python: Django, FastAPI, Flask, or language-only</li>
-      <li>Ruby: Rails, Sinatra, or language-only</li>
-      <li>C, C++, Java — language-only hello + compile/run</li>
-    </ul>
-    <h2>Systems</h2>
-    <p>macOS, Linux, and Windows. Install is the same idea everywhere: <strong>Rust (Cargo), then ManScript</strong>. Homebrew and Chocolatey are not the 0.1 path.</p>
-    <p>On Windows, C and C++ need a real compiler (LLVM or MinGW). Git’s <code>cc.exe</code> stub is not enough.</p>
-    <p><a href="install.html">Install</a> · <a href="uninstall.html">Remove it later</a></p>
+    <p>After install, start a project with <code>manscript create</code>. ManScript asks which language, which framework (or none), and a name. What we support and what happens inside an existing project is on <a href="create.html">Create</a>.</p>
+    <p>Updates are not automatic. Pull the repo and run <code>cargo install --path . --force</code> — see <a href="install.html">Install</a>.</p>
+    <p><a href="install.html">Install</a> · <a href="create.html">Create</a> · <a href="uninstall.html">Remove it later</a></p>
   </main>
   <footer>
-    <p>No trackers. No scripts. MIT.</p>
+    <p>No trackers. No scripts. MIT OR Apache-2.0.</p>
   </footer>
 </body>
 </html>

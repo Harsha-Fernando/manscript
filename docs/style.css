@@ -1,4 +1,9 @@
 /* Small, readable, no frameworks. Inspired by quiet blogs, not dashboards. */
+@font-face {
+  font-family: Jaro;
+  src: url("fonts/Jaro.ttf") format("truetype");
+  font-display: swap;
+}
 :root {
   color-scheme: light dark;
   --bg: #f7f4ef;
@@ -29,23 +34,56 @@ body {
 header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 2.5rem;
   font-size: 0.95rem;
 }
-header p {
+.brand {
   margin: 0;
-  font-weight: 600;
+}
+.brand a {
+  display: inline-block;
+  line-height: 0;
+  text-decoration: none;
+}
+.brand img {
+  height: 1.45em;
+  width: auto;
+  display: block;
 }
 nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
-h1 {
-  font-size: 1.75rem;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 0.75rem 0 1.25rem;
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.45rem 0.5rem 0.45rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+}
+th {
   font-weight: 600;
-  letter-spacing: -0.02em;
+}
+ol {
+  color: var(--muted);
+  padding-left: 1.25rem;
+}
+ol li {
+  margin: 0.35rem 0;
+}
+h1 {
+  font-family: Jaro, ui-sans-serif, sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   margin: 0 0 1rem;
 }
 h2 {

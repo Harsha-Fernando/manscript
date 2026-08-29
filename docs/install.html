@@ -4,13 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Install — ManScript</title>
+  <link rel="icon" type="image/jpeg" href="static/manscript-logo.jpg">
+  <link rel="apple-touch-icon" href="static/manscript-logo.jpg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <p><a href="index.html">ManScript</a></p>
+    <p class="brand">
+      <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
+    </p>
     <nav>
       <a href="install.html">Install</a>
+      <a href="create.html">Create</a>
       <a href="uninstall.html">Uninstall</a>
     </nav>
   </header>
@@ -37,9 +42,20 @@ cd manscript
 cargo install --path .</code></pre>
     <p>That puts <code>manscript</code> in <code>~/.cargo/bin</code> (Windows: <code>%USERPROFILE%\.cargo\bin</code>). If the shell says command not found, add that directory to PATH and open a new terminal.</p>
     <pre><code>manscript doctor
-manscript create django myproject
-cd myproject
+manscript create</code></pre>
+    <p>With no extra arguments, ManScript asks: language, then framework (or None), then a folder name. C, C++, and Java skip the framework question. When it finishes:</p>
+    <pre><code>cd myproject
 manscript run</code></pre>
+    <p>Use the name you typed at the prompt, not necessarily <code>myproject</code>.</p>
+    <p>Scripts and CI can skip the prompts with extra arguments, for example <code>manscript create django myproject</code>. That is optional. The usual way is still <code>manscript create</code>. Full detail: <a href="create.html">Create</a>.</p>
+
+    <h2>Update</h2>
+    <p>ManScript does <strong>not</strong> update itself. There is no background updater. When a new version is published, you install it again the same way you installed it the first time.</p>
+    <pre><code>cd manscript
+git pull
+cargo install --path . --force</code></pre>
+    <p><code>--force</code> is required: Cargo will not replace a binary that is already named <code>manscript</code>, even if the source changed. <code>manscript --version</code> shows what you actually have on PATH. After a source-only change at the same version number (0.1.0), that is still the command.</p>
+    <p>If you later install from crates.io, it would be <code>cargo install manscript --force</code> (and a version pin if you want one). That is not the 0.1 path yet.</p>
 
     <h2>What this does not install</h2>
     <p>Rustup does not install Django. A Django project still needs a Python that ManScript can detect (or download via its provider). Java projects need a JDK 17+. C/C++ need <code>cc</code> / <code>c++</code> that can actually compile, not a stub.</p>

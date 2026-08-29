@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create — ManScript</title>
+  <link rel="icon" type="image/jpeg" href="static/manscript-logo.jpg">
+  <link rel="apple-touch-icon" href="static/manscript-logo.jpg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <p class="brand">
+      <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
+    </p>
+    <nav>
+      <a href="install.html">Install</a>
+      <a href="create.html">Create</a>
+      <a href="uninstall.html">Uninstall</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Create</h1>
+    <p><code>manscript create</code> does two different jobs. Outside a project it starts a new folder. Inside a project (a directory that has <code>manscript.toml</code>, or a child of one) it adds an app or module. It will not nest another <code>startproject</code> inside an existing one.</p>
+
+    <h2>New project</h2>
+    <p>From an empty folder that is not already a ManScript project:</p>
+    <pre><code>manscript create</code></pre>
+    <ol>
+      <li>Language: Python, Ruby, C, C++, or Java.</li>
+      <li>Framework, if that language has any. Python offers Django, FastAPI, Flask, and <strong>None</strong> (language only). Ruby offers Rails, Sinatra, and <strong>None</strong>. C, C++, and Java skip this step.</li>
+      <li>A folder name (letters, numbers, hyphens, underscores).</li>
+    </ol>
+    <p>ManScript then writes the folder, an isolated environment under <code>.manscript/environment</code>, starter files, and <code>manscript.toml</code>. Next:</p>
+    <pre><code>cd the-name-you-chose
+manscript run</code></pre>
+    <p><code>-y</code> answers yes to confirmation prompts. It does not run the full wizard by itself. Without a language and name, interactive create still needs a terminal.</p>
+    <p>Optional shortcuts (scripts / CI), not the usual path:</p>
+    <pre><code>manscript create django myproject
+manscript create python myapp
+manscript create c hello</code></pre>
+
+    <h2>What we support</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>Frameworks</th>
+          <th>Language only</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Python</td>
+          <td>Django, FastAPI, Flask</td>
+          <td>picker <strong>None</strong>, or id <code>python</code></td>
+        </tr>
+        <tr>
+          <td>Ruby</td>
+          <td>Rails, Sinatra</td>
+          <td>picker <strong>None</strong>, or id <code>ruby</code></td>
+        </tr>
+        <tr>
+          <td>C</td>
+          <td>—</td>
+          <td><code>c</code></td>
+        </tr>
+        <tr>
+          <td>C++</td>
+          <td>—</td>
+          <td><code>cpp</code></td>
+        </tr>
+        <tr>
+          <td>Java</td>
+          <td>—</td>
+          <td><code>java</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>macOS, Linux, and Windows via rustup and Cargo. On Windows, C and C++ need a real compiler (LLVM or MinGW). Git’s <code>cc.exe</code> stub is not enough. Java needs JDK 17 or newer.</p>
+
+    <h2>What a new project gets</h2>
+    <ul>
+      <li><strong>Django</strong> — <code>django startproject</code> in the project env, pinned Django, default run is <code>python manage.py runserver</code>.</li>
+      <li><strong>FastAPI</strong> — app plus uvicorn; default run is uvicorn on port 8000.</li>
+      <li><strong>Flask</strong> — app; default run is Flask on port 5000.</li>
+      <li><strong>Rails</strong> — <code>rails new</code> via the project gems; default run is <code>bin/rails server</code>.</li>
+      <li><strong>Sinatra</strong> — <code>app.rb</code> and Gemfile; default run is <code>ruby app.rb</code>.</li>
+      <li><strong>Python only</strong> — <code>main.py</code> and empty <code>requirements.txt</code>; run is <code>python main.py</code>.</li>
+      <li><strong>Ruby only</strong> — <code>app.rb</code> and a bare Gemfile; run is <code>ruby app.rb</code>.</li>
+      <li><strong>C</strong> — <code>main.c</code>; <code>run</code> compiles with the project <code>cc</code> shim then executes <code>app</code>.</li>
+      <li><strong>C++</strong> — <code>main.cpp</code>; same with <code>c++</code>.</li>
+      <li><strong>Java</strong> — <code>Main.java</code>; <code>run</code> runs <code>javac</code> then <code>java -cp . Main</code>.</li>
+    </ul>
+
+    <h2>Inside a project</h2>
+    <p>Stay in the project folder (anywhere that still finds <code>manscript.toml</code>).</p>
+    <pre><code>manscript create</code></pre>
+    <table>
+      <thead>
+        <tr>
+          <th>This project is</th>
+          <th>What create adds</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Django</td>
+          <td>Asks App vs Model, then a name. <code>manscript create blog</code> is an <strong>app</strong> (startapp, INSTALLED_APPS, urls, hello view at <code>/blog/hello/</code>). <code>manscript create model Post</code> appends a model, registers it in admin, then <code>makemigrations</code> and <code>migrate</code>.</td>
+        </tr>
+        <tr>
+          <td>Rails</td>
+          <td>Asks kind: scaffold, resource, controller, or model, then a name. One argument is the name; it still asks which kind. Example: <code>manscript create scaffold Post</code>.</td>
+        </tr>
+        <tr>
+          <td>Flask</td>
+          <td>A blueprint.</td>
+        </tr>
+        <tr>
+          <td>FastAPI</td>
+          <td>A router.</td>
+        </tr>
+        <tr>
+          <td>Sinatra</td>
+          <td>Another routes file, required from <code>app.rb</code>.</td>
+        </tr>
+        <tr>
+          <td>python, ruby, c, cpp, java</td>
+          <td>Nothing to generate. Language-only trees are just files.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Other commands</h2>
+    <ul>
+      <li><code>manscript doctor</code> — machine checks; does not change files.</li>
+      <li><code>manscript setup</code> — runtime, environment, dependencies.</li>
+      <li><code>manscript install</code> — dependencies into the project env.</li>
+      <li><code>manscript run</code> / <code>test</code> / <code>build</code> — from <code>[commands]</code> in <code>manscript.toml</code>. Language-only <code>run</code> is not treated as a web server. C/C++/Java compile before run when needed.</li>
+      <li><code>manscript env</code> — paths for this project.</li>
+      <li><code>manscript init</code> — write <code>manscript.toml</code> in an existing directory.</li>
+    </ul>
+  </main>
+  <footer>
+    <p><a href="index.html">Home</a></p>
+  </footer>
+</body>
+</html>

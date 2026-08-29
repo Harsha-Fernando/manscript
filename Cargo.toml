@@ -3,11 +3,11 @@ name = "manscript"
 version = "0.1.0"
 edition = "2021"
 description = "Language-agnostic development environment and project manager"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 keywords = ["cli", "development", "environment", "python", "ruby"]
 categories = ["command-line-utilities", "development-tools"]
-repository = "https://github.com/manscript/manscript"
+repository = "https://github.com/Harsha-Fernando/manscript"
 
 [dependencies]
 anyhow = "1"

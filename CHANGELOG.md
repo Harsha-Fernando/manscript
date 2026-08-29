@@ -16,3 +16,4 @@ All notable changes to this project will be documented in this file.
 - Django in-project `create`: apps (urls + hello view) and models (admin + migrate)
 - Runtime providers: system, uv (Python), mise (Ruby)
 - Commands: create, init, setup, install, run, test, build, doctor, env
+- Dual license: MIT OR Apache-2.0
