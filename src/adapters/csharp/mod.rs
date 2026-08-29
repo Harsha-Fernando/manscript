@@ -260,6 +260,8 @@ fn dotnet_path(project: &Project) -> Vec<PathBuf> {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use super::*;
 
     #[test]
