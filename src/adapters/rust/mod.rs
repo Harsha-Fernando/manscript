@@ -34,7 +34,7 @@ impl LanguageAdapter for RustAdapter {
         runtime: &Runtime,
         _confirm: crate::adapters::traits::ConfirmPolicy,
     ) -> Result<Environment> {
-        let cargo = toolchain::sibling_or_which(&runtime.executable, "cargo")?;
+        let cargo = toolchain::find_cargo_for_rustc(&runtime.executable)?;
         let environment = toolchain::create_toolchain_env(
             project,
             &[

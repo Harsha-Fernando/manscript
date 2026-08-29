@@ -54,7 +54,7 @@ build = "python -m compileall ."</code></pre>
         </tbody>
       </table>
     </div>
-    <p>When omitted, <code>[environment]</code>, <code>[runtime]</code>, and <code>[commands]</code> deserialize to empty/default values. There is no separate lock-file schema in 0.1.4.</p>
+    <p>When omitted, <code>[environment]</code>, <code>[runtime]</code>, and <code>[commands]</code> deserialize to empty/default values. There is no separate lock-file schema in 0.1.5.</p>
 
     <h2>Command strings become argv</h2>
     <p>Configured commands look like shell text for readability, but ManScript does not run them through a shell. It splits the text into a program and arguments, resolves the program through the selected language adapter, and launches it directly.</p>

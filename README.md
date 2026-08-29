@@ -1,6 +1,6 @@
 # ManScript
 
-ManScript 0.1.4 is a language-agnostic CLI for creating and running projects in isolated development environments. It keeps project tools under `.manscript/environment`, so you do not need to activate a virtual environment or permanently change your shell.
+ManScript 0.1.5 is a language-agnostic CLI for creating and running projects in isolated development environments. It keeps project tools under `.manscript/environment`, so you do not need to activate a virtual environment or permanently change your shell.
 
 Supported languages are Python, Ruby, C, C++, Java, Go, Rust, PHP, and C#. Supported frameworks remain Django, FastAPI, Flask, Rails, and Sinatra; framework work is maintenance- and demand-driven while language environments are the primary direction.
 
@@ -94,7 +94,7 @@ Type `exit` or send EOF to return. See the [shell guide](docs/shell.html).
 
 ## Configuration and command safety
 
-`manscript.toml` declares the project name, language and version, optional framework, recorded environment manager, optional runtime provider, and optional `run`, `test`, and `build` commands. In 0.1.4, the language adapter controls the environment implementation.
+`manscript.toml` declares the project name, language and version, optional framework, recorded environment manager, optional runtime provider, and optional `run`, `test`, and `build` commands. In 0.1.5, the language adapter controls the environment implementation.
 
 Configured commands are parsed into a program and arguments. They are not sent through a command shell: `sudo`, path traversal in the program, and shell metacharacters such as `|`, `&&`, `$`, redirects, and backticks are rejected. Treat `manscript.toml` as trusted project configuration, like a Makefile. See [configuration](docs/config.html) and [security](SECURITY.md).
 

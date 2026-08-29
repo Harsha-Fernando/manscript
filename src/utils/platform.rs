@@ -71,13 +71,13 @@ pub fn uv_download_target() -> Option<(&'static str, &'static str)> {
     }
 }
 
-pub fn mise_download_target() -> Option<(&'static str, &'static str)> {
+pub fn mise_platform_suffix() -> Option<(&'static str, &'static str)> {
     match (env::consts::OS, env::consts::ARCH) {
-        ("macos", "aarch64") => Some(("mise-macos-arm64", "mise")),
-        ("macos", "x86_64") => Some(("mise-macos-x64", "mise")),
-        ("linux", "aarch64") => Some(("mise-linux-arm64", "mise")),
-        ("linux", "x86_64") => Some(("mise-linux-x64", "mise")),
-        ("windows", "x86_64") => Some(("mise-windows-x64", "mise.exe")),
+        ("macos", "aarch64") => Some(("macos-arm64", "mise")),
+        ("macos", "x86_64") => Some(("macos-x64", "mise")),
+        ("linux", "aarch64") => Some(("linux-arm64", "mise")),
+        ("linux", "x86_64") => Some(("linux-x64", "mise")),
+        ("windows", "x86_64") => Some(("windows-x64", "mise.exe")),
         _ => None,
     }
 }

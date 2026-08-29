@@ -1,4 +1,5 @@
 use assert_cmd::Command;
+use manscript::core::registry::default_registry;
 use predicates::prelude::*;
 use std::io::ErrorKind;
 use std::process::Command as ProcCommand;
@@ -70,6 +71,15 @@ fn command_succeeds(name: &str, args: &[&str]) -> bool {
         Err(_) => false,
         Ok(output) => output.status.success(),
     }
+}
+
+fn system_runtime_available(language: &str, version: &str) -> bool {
+    default_registry()
+        .providers()
+        .iter()
+        .find(|provider| provider.id() == "system")
+        .and_then(|provider| provider.detect(language, version).ok().flatten())
+        .is_some()
 }
 
 /// Git-for-Windows and similar stubs ship `cc.exe` without `cc1`. `--version` is not enough.
@@ -583,7 +593,7 @@ fn create_java_language_only_when_javac_exists() {
 
 #[test]
 fn create_go_language_only_when_go_exists() {
-    if !command_succeeds("go", &["version"]) {
+    if !system_runtime_available("go", "1.25") {
         return;
     }
     let dir = tempfile::tempdir().unwrap();
@@ -604,7 +614,7 @@ fn create_go_language_only_when_go_exists() {
 
 #[test]
 fn create_rust_language_only_when_rust_exists() {
-    if !has_bin("rustc") || !has_bin("cargo") {
+    if !system_runtime_available("rust", "stable") || !has_bin("cargo") {
         return;
     }
     let dir = tempfile::tempdir().unwrap();
@@ -625,7 +635,7 @@ fn create_rust_language_only_when_rust_exists() {
 
 #[test]
 fn create_php_language_only_when_php_and_composer_exist() {
-    if !has_bin("php") || !has_bin("composer") {
+    if !system_runtime_available("php", "8.4") || !has_bin("composer") {
         return;
     }
     let dir = tempfile::tempdir().unwrap();

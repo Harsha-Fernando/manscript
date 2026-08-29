@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use crate::core::environment::{Environment, EnvironmentKind};
 use crate::core::errors::{ManscriptError, Result};
@@ -209,6 +210,42 @@ pub fn sibling_or_which(tool: &Path, name: &str) -> Result<PathBuf> {
         language: name.to_string(),
         version: "system".into(),
     })
+}
+
+pub fn find_cargo_for_rustc(rustc: &Path) -> Result<PathBuf> {
+    if let Ok(output) = Command::new("rustup").args(["which", "cargo"]).output() {
+        if output.status.success() {
+            let path = PathBuf::from(String::from_utf8_lossy(&output.stdout).trim());
+            if path.is_file() {
+                return Ok(path);
+            }
+        }
+    }
+
+    if let Some(dir) = rustc.parent() {
+        let cargo = dir.join(exe_name("cargo"));
+        if cargo.is_file() && !is_rustup_proxy_name(&cargo) {
+            return Ok(cargo);
+        }
+    }
+
+    let cargo = which::which(exe_name("cargo")).map_err(|_| ManscriptError::RuntimeNotFound {
+        language: "cargo".into(),
+        version: "system".into(),
+    })?;
+    if is_rustup_proxy_name(&cargo) {
+        return Err(ManscriptError::Message(
+            "ManScript found a rustup proxy instead of a concrete `cargo` executable.\n\nInstall the Rust toolchain with `rustup` or ensure `cargo` resolves to the toolchain binary, then run `manscript setup` again."
+                .into(),
+        ));
+    }
+    Ok(cargo)
+}
+
+fn is_rustup_proxy_name(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.contains("rustup"))
 }
 
 fn is_under_root(root: &Path, path: &Path) -> Result<bool> {

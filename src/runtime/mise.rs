@@ -8,7 +8,7 @@ use crate::runtime::download::{download_to_file, extract_tar_gz, find_named_file
 use crate::runtime::system::probe_version;
 use crate::runtime::RuntimeProvider;
 use crate::utils::filesystem::{ensure_dir, manscript_home, tools_dir};
-use crate::utils::platform::{exe_name, mise_download_target};
+use crate::utils::platform::{exe_name, mise_platform_suffix};
 
 pub struct MiseProvider;
 
@@ -170,60 +170,96 @@ fn display_language(language: &str) -> &'static str {
     }
 }
 
+fn latest_mise_release_tag() -> Result<String> {
+    let response = ureq::get("https://api.github.com/repos/jdx/mise/releases/latest")
+        .set("User-Agent", "manscript/0.1")
+        .call()
+        .map_err(|e| {
+            ManscriptError::Message(format!(
+                "ManScript could not determine the latest `mise` release.\n\nNetwork detail:\n  {e}\n\nCheck your connection and try `manscript setup` again."
+            ))
+        })?;
+    let body = response.into_string().map_err(|e| {
+        ManscriptError::Message(format!(
+            "ManScript downloaded the latest `mise` release metadata but could not read it.\n\nSystem detail:\n  {e}\n\nTry `manscript setup` again."
+        ))
+    })?;
+    parse_release_tag(&body).ok_or_else(|| {
+        ManscriptError::Message(
+            "ManScript could not parse the latest `mise` release metadata.\n\nTry `manscript setup` again.".into(),
+        )
+    })
+}
+
+fn parse_release_tag(body: &str) -> Option<String> {
+    let marker = "\"tag_name\":";
+    let rest = body.split(marker).nth(1)?.trim_start();
+    let tag = rest.strip_prefix('"')?;
+    let end = tag.find('"')?;
+    let tag = tag[..end].trim();
+    if tag.is_empty() {
+        None
+    } else {
+        Some(tag.to_string())
+    }
+}
+
 fn bootstrap_mise() -> Result<PathBuf> {
-    let Some((target, bin_name)) = mise_download_target() else {
+    let Some((platform_suffix, bin_name)) = mise_platform_suffix() else {
         return Err(ManscriptError::Message(
             "Automatic `mise` installation is not supported on this platform.\n\nInstall `mise` or a compatible runtime manually, then run `manscript setup` again.".into(),
         ));
     };
     let dest_dir = tools_dir().join("mise");
     ensure_dir(&dest_dir)?;
-    let url = format!("https://github.com/jdx/mise/releases/latest/download/{target}");
-    // GitHub asset names include version; try tarball naming used by mise.
-    let tar_url = format!("{url}.tar.gz");
-    let archive = dest_dir.join("mise-download.tar.gz");
-    match download_to_file(&tar_url, &archive) {
-        Ok(()) => {}
-        Err(_) => {
-            // Fallback: linux/mac binary without archive.
-            let bin = dest_dir.join(bin_name);
-            download_to_file(&url, &bin)?;
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                let mut perms = std::fs::metadata(&bin)?.permissions();
-                perms.set_mode(0o755);
-                std::fs::set_permissions(&bin, perms)?;
-            }
-            return Ok(bin);
-        }
-    }
-    let extract_dir = dest_dir.join("extract");
-    let _ = std::fs::remove_dir_all(&extract_dir);
-    extract_tar_gz(&archive, &extract_dir)?;
-    let found = find_named_file(&extract_dir, bin_name).ok_or_else(|| {
-        ManscriptError::Message(
-            "The downloaded `mise` archive did not contain the expected executable.\n\nRemove the incomplete `mise` directory from the ManScript cache, then run `manscript setup` again."
-                .into(),
-        )
-    })?;
+    let tag = latest_mise_release_tag()?;
     let dest_bin = dest_dir.join(bin_name);
-    std::fs::copy(&found, &dest_bin)?;
-    #[cfg(unix)]
+
+    #[cfg(windows)]
     {
+        let url = format!(
+            "https://github.com/jdx/mise/releases/download/{tag}/mise-{tag}-{platform_suffix}.exe"
+        );
+        download_to_file(&url, &dest_bin)?;
+        return Ok(dest_bin);
+    }
+
+    #[cfg(not(windows))]
+    {
+        let url = format!(
+            "https://github.com/jdx/mise/releases/download/{tag}/mise-{tag}-{platform_suffix}.tar.gz"
+        );
+        let archive = dest_dir.join("mise-download.tar.gz");
+        download_to_file(&url, &archive)?;
+        let extract_dir = dest_dir.join("extract");
+        let _ = std::fs::remove_dir_all(&extract_dir);
+        extract_tar_gz(&archive, &extract_dir)?;
+        let found = find_named_file(&extract_dir, bin_name).ok_or_else(|| {
+            ManscriptError::Message(
+                "The downloaded `mise` archive did not contain the expected executable.\n\nRemove the incomplete `mise` directory from the ManScript cache, then run `manscript setup` again."
+                    .into(),
+            )
+        })?;
+        std::fs::copy(&found, &dest_bin)?;
         use std::os::unix::fs::PermissionsExt;
         let mut perms = std::fs::metadata(&dest_bin)?.permissions();
         perms.set_mode(0o755);
         std::fs::set_permissions(&dest_bin, perms)?;
+        let _ = std::fs::remove_file(&archive);
+        let _ = std::fs::remove_dir_all(&extract_dir);
+        Ok(dest_bin)
     }
-    let _ = std::fs::remove_file(&archive);
-    let _ = std::fs::remove_dir_all(&extract_dir);
-    Ok(dest_bin)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parses_latest_mise_release_tag() {
+        let body = r#"{"tag_name":"v2026.8.14","name":"v2026.8.14"}"#;
+        assert_eq!(parse_release_tag(body).as_deref(), Some("v2026.8.14"));
+    }
 
     #[test]
     fn maps_supported_languages_to_mise_tools() {

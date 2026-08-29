@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-30
+
+### Fixed
+
+- Resolved Rust project `cargo` shims to the real toolchain binary instead of rustup proxies on CI and rustup-managed systems
+- Updated `mise` bootstrap downloads to use versioned GitHub release assets
+- Skipped language integration tests unless the system runtime matches the configured project version, preventing accidental mise downloads in CI
+
 ## [0.1.4] - 2026-08-30
 
 ### Added
