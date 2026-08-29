@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Uninstall — ManScript</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <p><a href="index.html">ManScript</a></p>
+    <nav>
+      <a href="install.html">Install</a>
+      <a href="uninstall.html">Uninstall</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Uninstall</h1>
+    <p>ManScript is a Cargo binary plus optional cache folders. Removing it does <strong>not</strong> remove your system Python, Rust, Java, or compilers.</p>
+
+    <h2>1. The CLI</h2>
+    <pre><code>cargo uninstall manscript</code></pre>
+    <p>That deletes <code>manscript</code> from Cargo’s bin directory.</p>
+
+    <h2>2. Downloaded tools (optional)</h2>
+    <p>If ManScript fetched runtimes into your home directory:</p>
+    <h3>macOS and Linux</h3>
+    <pre><code>rm -rf ~/.manscript</code></pre>
+    <h3>Windows (PowerShell)</h3>
+    <pre><code>Remove-Item -Recurse -Force "$env:USERPROFILE\.manscript"</code></pre>
+    <p>If you set <code>MANSCRIPT_HOME</code>, delete that folder instead.</p>
+
+    <h2>3. Project environments (optional)</h2>
+    <p>Each ManScript project has an isolated env at <code>.manscript</code> inside the project. Delete that folder, or delete the whole project if you do not need it.</p>
+    <h3>macOS and Linux</h3>
+    <pre><code>rm -rf /path/to/your-project/.manscript</code></pre>
+    <h3>Windows (PowerShell)</h3>
+    <pre><code>Remove-Item -Recurse -Force .\path\to\your-project\.manscript</code></pre>
+
+    <h2>Rust itself</h2>
+    <p>Leave Rust if you still use it. To remove rustup as well: <a href="https://rust-lang.github.io/rustup/installation/index.html">rustup self uninstall</a> — that is separate from ManScript.</p>
+    <p><a href="install.html">Install again</a></p>
+  </main>
+  <footer>
+    <p><a href="index.html">Home</a></p>
+  </footer>
+</body>
+</html>

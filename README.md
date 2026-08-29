@@ -29,7 +29,7 @@ cd myproject
 manscript run
 ```
 
-**Supported today:** macOS and Linux. Windows is not a supported release yet; CI runs `cargo test` on Windows so we can see what breaks.
+**Supported:** macOS, Linux, and Windows via [rustup](https://rustup.rs) and `cargo install`. Homebrew and downloadable binaries are not part of 0.1. Human docs: [`docs/`](docs/) (deploy on Vercel; set the project root directory to `docs`).
 
 Python and Ruby work as **language-only** projects (`manscript create python myapp`) or with frameworks (Django, FastAPI, Flask, Rails, Sinatra). C, C++, and Java are language-only (`manscript create c hello`, `cpp`, `java`). Additional languages can be added later through adapters.
 
@@ -52,15 +52,17 @@ See `manscript env` inside a project for the exact paths.
 
 ## Install
 
-**Development (macOS / Linux):**
+**macOS, Linux, and Windows** (Rust required):
 
 ```bash
-git clone <this-repo>
-cd Manscript
+git clone https://github.com/Harsha-Fernando/manscript.git
+cd manscript
 cargo install --path .
 ```
 
-Homebrew and downloadable binaries are planned; they are not part of 0.1.
+Add `~/.cargo/bin` to PATH if `manscript` is not found (Windows: `%USERPROFILE%\.cargo\bin`).
+
+Homebrew and downloadable binaries are not part of 0.1. To remove ManScript, see [`docs/uninstall.html`](docs/uninstall.html).
 
 ## Commands
 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install — ManScript</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <p><a href="index.html">ManScript</a></p>
+    <nav>
+      <a href="install.html">Install</a>
+      <a href="uninstall.html">Uninstall</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Install</h1>
+    <p>0.1 ships as source. You install <strong>Rust</strong>, then compile ManScript with Cargo. You do not need Homebrew or Chocolatey.</p>
+
+    <h2>1. Rust</h2>
+    <p>Use <a href="https://rustup.rs">rustup</a>. That is the usual way to get <code>rustc</code> and <code>cargo</code>.</p>
+    <h3>macOS and Linux</h3>
+    <pre><code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"</code></pre>
+    <p>On macOS, if compile fails, install Xcode Command Line Tools: <code>xcode-select --install</code>.</p>
+    <p>On Debian/Ubuntu, you may need: <code>sudo apt install build-essential</code>.</p>
+    <h3>Windows</h3>
+    <p>Download and run the installer from <a href="https://rustup.rs">rustup.rs</a> (64-bit). The MSVC toolchain is the default and is fine. After it finishes, open a <strong>new</strong> terminal so <code>cargo</code> is on PATH.</p>
+    <p>Check:</p>
+    <pre><code>cargo --version</code></pre>
+
+    <h2>2. ManScript</h2>
+    <p>Clone the repo (you need access if it is private), then install from the project folder:</p>
+    <pre><code>git clone https://github.com/Harsha-Fernando/manscript.git
+cd manscript
+cargo install --path .</code></pre>
+    <p>That puts <code>manscript</code> in <code>~/.cargo/bin</code> (Windows: <code>%USERPROFILE%\.cargo\bin</code>). If the shell says command not found, add that directory to PATH and open a new terminal.</p>
+    <pre><code>manscript doctor
+manscript create django myproject
+cd myproject
+manscript run</code></pre>
+
+    <h2>What this does not install</h2>
+    <p>Rustup does not install Django. A Django project still needs a Python that ManScript can detect (or download via its provider). Java projects need a JDK 17+. C/C++ need <code>cc</code> / <code>c++</code> that can actually compile, not a stub.</p>
+    <p><a href="uninstall.html">Uninstall</a></p>
+  </main>
+  <footer>
+    <p><a href="index.html">Home</a></p>
+  </footer>
+</body>
+</html>
