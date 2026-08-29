@@ -1,10 +1,12 @@
 use clap::{error::ErrorKind, Parser, Subcommand};
+use clap_complete::Shell;
 
 use crate::core::errors::Result;
 use crate::core::registry::default_registry;
 use crate::utils::output::{clap_styles, print_unknown_command, unrecognized_subcommand};
 
 mod build;
+mod completions;
 mod create;
 mod doctor;
 mod env;
@@ -38,6 +40,7 @@ pub enum Commands {
     /// New project, or add an app/module inside the current one
     Create {
         /// django / fastapi / … for a new project, or an app name if you are already in one
+        #[arg(value_parser = completions::CreateFirstArgParser)]
         framework: Option<String>,
         /// Project directory name
         name: Option<String>,
@@ -67,6 +70,12 @@ pub enum Commands {
     Doctor,
     /// Show this project's paths and interpreters
     Env,
+    /// Print a Tab-completion script for your shell
+    Completions {
+        /// bash, zsh, fish, powershell, or elvish
+        #[arg(value_enum)]
+        shell: Shell,
+    },
 }
 
 pub fn dispatch() -> Result<()> {
@@ -110,5 +119,6 @@ pub fn dispatch() -> Result<()> {
         Some(Commands::Build { args }) => build::execute(&registry, &args),
         Some(Commands::Doctor) => doctor::execute(&registry),
         Some(Commands::Env) => env::execute(&registry),
+        Some(Commands::Completions { shell }) => completions::execute(shell),
     }
 }

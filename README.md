@@ -75,8 +75,17 @@ Homebrew and downloadable binaries are not part of 0.1. To remove ManScript, see
 | `manscript run` / `test` / `build` | Execute configured commands |
 | `manscript doctor` | Diagnose the machine (never mutates) |
 | `manscript env` | Print resolved environment paths |
+| `manscript completions` | Print a Tab-completion script (`bash`, `zsh`, `fish`, `powershell`, `elvish`) |
 
 Use `--yes` / `-y` for non-interactive confirmation (CI).
+
+**Tab completion (zsh):** after `manscript` is on PATH, add this to `~/.zshrc` and open a new terminal:
+
+```bash
+eval "$(manscript completions zsh)"
+```
+
+Then `manscript` + Tab lists commands (`create`, `run`, `doctor`, …). `manscript create` + Tab suggests stacks (`django`, `python`, `c`, …). Completing the word `manscript` itself is the shell completing a binary on PATH (`~/.cargo/bin`).
 
 ## How it works
 

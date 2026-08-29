@@ -44,6 +44,7 @@ fn help_lists_commands() {
         .stdout(predicate::str::contains("create"))
         .stdout(predicate::str::contains("doctor"))
         .stdout(predicate::str::contains("run"))
+        .stdout(predicate::str::contains("completions"))
         .stdout(predicate::str::contains("╭").not());
 }
 
@@ -66,7 +67,19 @@ fn version_prints() {
         .assert()
         .success()
         .stdout(predicate::str::contains("INFO"))
-        .stdout(predicate::str::contains("0.1.0"));
+        .stdout(predicate::str::contains("0.1.1"));
+}
+
+#[test]
+fn completions_zsh_lists_commands() {
+    bin()
+        .args(["completions", "zsh"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("_manscript"))
+        .stdout(predicate::str::contains("create"))
+        .stdout(predicate::str::contains("doctor"))
+        .stdout(predicate::str::contains("django"));
 }
 
 #[test]

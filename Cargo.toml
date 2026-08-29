@@ -1,6 +1,6 @@
 [package]
 name = "manscript"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Language-agnostic development environment and project manager"
 license = "MIT OR Apache-2.0"
@@ -12,6 +12,7 @@ repository = "https://github.com/Harsha-Fernando/manscript"
 [dependencies]
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
+clap_complete = "4"
 owo-colors = "4"
 strsim = "0.11"
 dirs = "6"

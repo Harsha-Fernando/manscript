@@ -6,7 +6,17 @@ use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use owo_colors::OwoColorize;
 
 const SUBCOMMANDS: &[&str] = &[
-    "create", "init", "setup", "install", "run", "test", "build", "doctor", "env", "help",
+    "create",
+    "init",
+    "setup",
+    "install",
+    "run",
+    "test",
+    "build",
+    "doctor",
+    "env",
+    "completions",
+    "help",
 ];
 
 thread_local! {

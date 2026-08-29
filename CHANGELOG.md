@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-08-29
+
+### Added
+
+- `manscript completions` prints a Tab-completion script for bash, zsh, fish, PowerShell, and Elvish
+- After the script is loaded, Tab completes commands and `create` stack ids (`django`, `python`, `c`, …)
+
 ## [0.1.0] - 2026-08-29
 
 ### Added
