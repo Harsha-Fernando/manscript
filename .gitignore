@@ -1,0 +1,9 @@
+/target
+**/.manscript/
+.cursor/
+start/
+.DS_Store
+*.rs.bk
+.env
+.env.*
+*.pem

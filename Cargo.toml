@@ -1,0 +1,36 @@
+[package]
+name = "manscript"
+version = "0.1.0"
+edition = "2021"
+description = "Language-agnostic development environment and project manager"
+license = "MIT"
+readme = "README.md"
+keywords = ["cli", "development", "environment", "python", "ruby"]
+categories = ["command-line-utilities", "development-tools"]
+repository = "https://github.com/manscript/manscript"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+owo-colors = "4"
+strsim = "0.11"
+dirs = "6"
+crossterm = "0.28"
+semver = "1"
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+toml = "0.8"
+flate2 = "1"
+tar = "0.4"
+ureq = { version = "2", features = ["tls"] }
+which = "7"
+indicatif = "0.17"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
+
+[[bin]]
+name = "manscript"
+path = "src/main.rs"
