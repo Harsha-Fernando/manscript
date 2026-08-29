@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Command reference — ManScript</title>
-  <meta name="description" content="Complete ManScript 0.1.3 command reference with project, environment, and mutation prerequisites.">
+  <meta name="description" content="Complete ManScript command reference with project, environment, and mutation prerequisites.">
   <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,6 +12,8 @@
   <main id="main">
     <p class="eyebrow">Reference</p><h1>Commands</h1>
     <p class="lede">Commands that need a project search the current directory and its parents for <code>manscript.toml</code>. An “environment” means the prepared tools under that project's <code>.manscript/environment</code>.</p>
+
+    <aside class="callout"><h2>How to read the output</h2><p><code>INFO</code> introduces a command, numbered steps show multi-stage work, <code>DONE</code> confirms success, and <code>WARN</code> identifies a recoverable state. Suggested commands appear only when they are useful next actions. Animation is limited to interactive terminals; <code>NO_COLOR=1</code> produces plain static output.</p></aside>
 
     <div class="table-wrap">
       <table>
@@ -41,23 +43,23 @@ manscript init
 manscript setup</code></pre>
 
     <h2><code>manscript setup</code></h2>
-    <p>Resolves the configured runtime, creates the project environment when needed, and installs dependencies. Runtime downloads require confirmation unless <code>--yes</code> is supplied.</p>
+    <p>Resolves the configured runtime, creates the project environment when needed, and installs dependencies. Unless an explicit provider is configured, resolution uses a suitable system runtime first; Go, Rust, PHP, and C# can fall back to a mise-managed runtime below <code>MANSCRIPT_HOME</code>. Runtime downloads require confirmation unless <code>--yes</code> is supplied. Dependency setup directly runs <code>go mod download</code>, <code>cargo fetch</code>, <code>composer install</code>, or <code>dotnet restore</code> for the matching language-only project.</p>
 
     <h2><code>manscript install</code></h2>
-    <p>Reinstalls project dependencies using the prepared environment. It does not create a missing environment; a missing environment is an error with a <code>manscript setup</code> recovery hint.</p>
+    <p>Installs or refreshes project dependencies using the prepared environment. For Go, Rust, PHP, and C# this means <code>go mod download</code>, <code>cargo fetch</code>, <code>composer install</code>, or <code>dotnet restore</code>, with project-local dependency/cache variables. It does not create a missing environment; a missing environment is an error with a <code>manscript setup</code> recovery hint.</p>
 
     <h2><code>manscript run [args...]</code></h2>
-    <p>Runs <code>[commands].run</code> and appends trailing arguments as literal argv values. A configured run command and prepared environment are required. C, C++, and Java builds are prepared before execution when needed.</p>
+    <p>Runs <code>[commands].run</code> and appends trailing arguments as literal argv values. A configured run command and prepared environment are required. C, C++, and Java builds are prepared before execution when needed; Go, Rust, and C# use their configured toolchain run commands.</p>
     <pre><code>manscript run --port 9000</code></pre>
 
     <h2><code>manscript test [args...]</code></h2>
     <p>Runs <code>[commands].test</code> with appended arguments. If no test command is configured, ManScript reports that there is nothing to do and exits successfully.</p>
 
     <h2><code>manscript build [args...]</code></h2>
-    <p>Builds language artifacts through the adapter or runs <code>[commands].build</code>. C compiles <code>main.c</code>, C++ compiles <code>main.cpp</code>, Java compiles <code>Main.java</code>, and Rails runs <code>bin/rails assets:precompile</code>. A project with neither adapter build behavior nor a build command reports that there is nothing to do.</p>
+    <p>Builds language artifacts through the adapter or runs <code>[commands].build</code>. C compiles <code>main.c</code>, C++ compiles <code>main.cpp</code>, Java compiles <code>Main.java</code>, Go runs <code>go build</code>, Rust runs <code>cargo build</code>, C# runs <code>dotnet build</code>, and Rails runs <code>bin/rails assets:precompile</code>. PHP has no default build command. A project with neither adapter build behavior nor a build command reports that there is nothing to do.</p>
 
     <h2><code>manscript doctor</code></h2>
-    <p>Read-only diagnostics for the platform, ManScript version, Python and venv, pip/uv, Ruby and Bundler, C/C++ compilers, and Java JDK. Inside a project it also checks whether the project environment is ready.</p>
+    <p>Read-only diagnostics for the platform, ManScript version, Python and venv, pip/uv, Ruby and Bundler, C/C++ compilers, Java JDK, Go, Rust and Cargo, PHP and Composer, and the .NET SDK. Inside a project it also checks whether the project environment is ready.</p>
 
     <h2><code>manscript env</code></h2>
     <p>Shows the project root, configured language/framework, environment and tool-bin paths, optional runtime provider, preferred commands, and environment readiness. It does not create the environment.</p>
@@ -66,7 +68,7 @@ manscript setup</code></pre>
     <p>Opens an interactive child shell in the project root with managed tools first on its <code>PATH</code>. Requires a configured project and prepared environment. See the <a href="shell.html">shell guide</a>.</p>
 
     <h2><code>manscript completions &lt;shell&gt;</code></h2>
-    <p>Prints a completion script for <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>powershell</code>, or <code>elvish</code>. Redirect or evaluate it using your shell's conventions. ManScript does not install it automatically.</p>
+    <p>Generates completion code for <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>powershell</code>, or <code>elvish</code>. Run it directly to see a short activation command; generated code is emitted only when redirected, piped, or evaluated. The zsh output initializes <code>compinit</code> when needed. ManScript does not install completion permanently.</p>
 
     <h2>Global options</h2>
     <ul><li><code>-y</code>, <code>--yes</code>: accept supported confirmation prompts for CI or non-interactive use.</li><li><code>-h</code>, <code>--help</code>: show help.</li><li><code>-V</code>, <code>--version</code>: show the installed version.</li></ul>

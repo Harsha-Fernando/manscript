@@ -25,7 +25,12 @@ impl LanguageAdapter for JavaAdapter {
         "toolchain"
     }
 
-    fn create_environment(&self, project: &Project, runtime: &Runtime) -> Result<Environment> {
+    fn create_environment(
+        &self,
+        project: &Project,
+        runtime: &Runtime,
+        _confirm: crate::adapters::traits::ConfirmPolicy,
+    ) -> Result<Environment> {
         let java = toolchain::sibling_or_which(&runtime.executable, "java")?;
         toolchain::create_toolchain_env(
             project,

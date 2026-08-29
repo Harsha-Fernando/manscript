@@ -42,19 +42,19 @@ build = "python -m compileall ."</code></pre>
         <thead><tr><th scope="col">Key</th><th scope="col">Type</th><th scope="col">Required?</th><th scope="col">Meaning</th></tr></thead>
         <tbody>
           <tr><th scope="row"><code>name</code></th><td>string</td><td>Yes</td><td>Human-readable project name and child-shell prompt source.</td></tr>
-          <tr><th scope="row"><code>language.name</code></th><td>string</td><td>Yes</td><td><code>python</code>, <code>ruby</code>, <code>c</code>, <code>cpp</code>, or <code>java</code>.</td></tr>
+          <tr><th scope="row"><code>language.name</code></th><td>string</td><td>Yes</td><td><code>python</code>, <code>ruby</code>, <code>c</code>, <code>cpp</code>, <code>java</code>, <code>go</code>, <code>rust</code>, <code>php</code>, or <code>csharp</code>.</td></tr>
           <tr><th scope="row"><code>language.version</code></th><td>string</td><td>Yes</td><td>Runtime version requirement used during detection and setup.</td></tr>
           <tr><th scope="row"><code>framework.name</code></th><td>string</td><td>With section</td><td><code>django</code>, <code>fastapi</code>, <code>flask</code>, <code>rails</code>, or <code>sinatra</code>.</td></tr>
           <tr><th scope="row"><code>framework.version</code></th><td>string</td><td>With section</td><td>Configured framework version.</td></tr>
-          <tr><th scope="row"><code>environment.manager</code></th><td>string</td><td>No</td><td>Records the adapter's environment strategy. Generated configs use <code>venv</code>, <code>bundler</code>, or <code>toolchain</code>. In 0.1.3, the selected language adapter controls the implementation; changing this value does not switch environment providers.</td></tr>
-          <tr><th scope="row"><code>runtime.provider</code></th><td>string</td><td>No</td><td>Provider preference: <code>system</code>, <code>uv</code>, or <code>mise</code> where supported. If omitted, the registry resolves a suitable provider.</td></tr>
+          <tr><th scope="row"><code>environment.manager</code></th><td>string</td><td>No</td><td>Records the adapter's environment strategy. Generated configs use <code>venv</code>, <code>bundler</code>, <code>toolchain</code>, <code>composer</code>, or <code>dotnet</code>. The selected language adapter controls the implementation; changing this value does not switch environment providers.</td></tr>
+          <tr><th scope="row"><code>runtime.provider</code></th><td>string</td><td>No</td><td>Explicit provider preference: <code>system</code>, <code>uv</code>, or <code>mise</code> where supported. If omitted, ManScript first detects a suitable system runtime, then offers the language's managed fallback after confirmation.</td></tr>
           <tr><th scope="row"><code>commands.run</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript run</code>; run errors when absent.</td></tr>
           <tr><th scope="row"><code>commands.test</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript test</code>; absence is a successful no-op.</td></tr>
           <tr><th scope="row"><code>commands.build</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript build</code>; adapters may provide build behavior themselves.</td></tr>
         </tbody>
       </table>
     </div>
-    <p>When omitted, <code>[environment]</code>, <code>[runtime]</code>, and <code>[commands]</code> deserialize to empty/default values. There is no separate lock-file schema in 0.1.3.</p>
+    <p>When omitted, <code>[environment]</code>, <code>[runtime]</code>, and <code>[commands]</code> deserialize to empty/default values. There is no separate lock-file schema in 0.1.4.</p>
 
     <h2>Command strings become argv</h2>
     <p>Configured commands look like shell text for readability, but ManScript does not run them through a shell. It splits the text into a program and arguments, resolves the program through the selected language adapter, and launches it directly.</p>
@@ -75,7 +75,7 @@ build = "python -m compileall ."</code></pre>
     <aside class="callout warning"><h3>Configuration is still trusted</h3><p>Direct argv execution reduces shell-injection risk, but a command can still run an executable and dependencies can run installation code. Review <code>manscript.toml</code> in an unfamiliar repository before setup or execution.</p></aside>
 
     <h2>Storage locations</h2>
-    <p>The project environment always lives under <code>.manscript/environment</code>. User-level downloaded tools live under <code>~/.manscript/tools</code> by default. Set <code>MANSCRIPT_HOME</code> before running ManScript to move that user cache; it does not move the project-local environment.</p>
+    <p>The project environment always lives under <code>.manscript/environment</code>. Go sets project-local <code>GOMODCACHE</code>, <code>GOCACHE</code>, and <code>GOPATH</code>; Rust sets <code>CARGO_HOME</code> and <code>CARGO_TARGET_DIR</code>; PHP sets <code>COMPOSER_HOME</code>; C# sets <code>NUGET_PACKAGES</code> and <code>DOTNET_CLI_HOME</code>. User-level downloaded tools live under <code>~/.manscript/tools</code> by default. Set <code>MANSCRIPT_HOME</code> before running ManScript to move that user cache; it does not move project-local environments or caches.</p>
   </main>
   <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html" aria-current="page">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>
   <a class="to-top" href="#top">Back to top</a><script src="copy.js" defer></script>

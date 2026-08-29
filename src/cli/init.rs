@@ -1,4 +1,3 @@
-use crate::adapters::traits::ConfirmPolicy;
 use crate::config::{config_path, CONFIG_FILE_NAME};
 use crate::core::errors::Result;
 use crate::core::registry::AdapterRegistry;
@@ -10,11 +9,17 @@ use std::env;
 
 pub fn execute(registry: &AdapterRegistry, yes: bool) -> Result<()> {
     let printer = Printer::new();
-    printer.info("Init");
     let cwd = env::current_dir()?;
+    printer.command_intro(
+        "Init",
+        "Configure this existing folder as a ManScript project.",
+    );
     let dest = config_path(&cwd);
     if dest.exists() {
-        printer.info(&format!("{CONFIG_FILE_NAME} already exists."));
+        printer.command_done(
+            &format!("`{CONFIG_FILE_NAME}` already exists. Nothing changed."),
+            &["manscript setup"],
+        );
         return Ok(());
     }
 
@@ -77,9 +82,13 @@ pub fn execute(registry: &AdapterRegistry, yes: bool) -> Result<()> {
         &manager,
         commands,
     );
+    printer.key_value("Project", &name);
+    printer.key_value("Language", &language);
+    printer.key_value("Template", &fw);
     config.save(&dest)?;
-    printer.success(&format!("Created `{CONFIG_FILE_NAME}`."));
-    printer.next_steps(&["manscript setup"]);
-    let _ = ConfirmPolicy::AlwaysYes;
+    printer.command_done(
+        &format!("Created `{CONFIG_FILE_NAME}`."),
+        &["manscript setup"],
+    );
     Ok(())
 }

@@ -24,7 +24,9 @@ To add a language:
 1. Implement `LanguageAdapter`.
 2. Add a `RuntimeProvider` if needed.
 3. Register both in `default_registry()`.
-4. Add framework adapters as needed.
+4. Add a language-only project adapter and document its project-local cache/dependency behavior.
+
+Language environments are the primary product direction. Framework features are maintenance- and demand-driven; add or expand a framework only when its user need and ongoing maintenance path are clear.
 
 ## Tests
 
@@ -41,6 +43,7 @@ For every user-visible change:
 - [ ] Update `docs/commands.html` for command names, arguments, prerequisites, mutation behavior, or output changes.
 - [ ] Update `docs/config.html` for any `manscript.toml` field, default, validation, or command-execution change.
 - [ ] Update `docs/troubleshooting.html` and `docs/shell.html` when setup, detection, PATH, or shell behavior changes.
+- [ ] Keep supported-language lists synchronized across the README, Create, Config, Commands, Install, Shell, Doctor/troubleshooting, and Uninstall documentation.
 - [ ] Add an entry under `CHANGELOG.md` → `Unreleased`.
 - [ ] Check that every local HTML `href` points to an existing file or page fragment.
 - [ ] Preview the static site locally at narrow and wide widths, in light and dark mode, with keyboard-only navigation.
@@ -51,7 +54,7 @@ See `docs/README.md` for local preview instructions.
 
 ## Pull requests
 
-- Keep the 0.1 scope: no SaaS, AI, Docker orchestration, or extra languages unless agreed.
+- Keep the 0.1 scope: no SaaS, AI, Docker orchestration, or extra languages beyond Python, Ruby, C, C++, Java, Go, Rust, PHP, and C# unless agreed.
 - Prefer actionable errors over exit codes alone.
 - Keep static documentation dependency-free and deployable without a build step.
 - Do not commit generated project environments, runtime caches, or credentials.

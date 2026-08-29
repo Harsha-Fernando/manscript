@@ -17,8 +17,8 @@
     <h2>Start a new project</h2>
     <pre><code>manscript create</code></pre>
     <ol>
-      <li>Choose Python, Ruby, C, C++, or Java.</li>
-      <li>For Python or Ruby, choose a framework or <strong>None</strong>. C, C++, and Java skip this prompt because each has one project kind.</li>
+      <li>Choose Python, Ruby, C, C++, Java, Go, Rust, PHP, or C#.</li>
+      <li>For Python or Ruby, choose a framework or <strong>None</strong>. C, C++, Java, Go, Rust, PHP, and C# skip this prompt because each has one language-only project kind.</li>
       <li>Enter the new folder name.</li>
     </ol>
     <p>Project folder names may contain ASCII letters, numbers, hyphens, and underscores, but not spaces or paths. ManScript asks before continuing into an existing non-empty directory.</p>
@@ -29,10 +29,18 @@ manscript run</code></pre>
     <pre><code>manscript create django myproject
 manscript create python utility
 manscript create c hello
-manscript create java sample</code></pre>
+manscript create java sample
+manscript create go service
+manscript create rust worker
+manscript create php site
+manscript create csharp console-app</code></pre>
     <p>The global <code>--yes</code> or <code>-y</code> flag accepts confirmation prompts. It does not provide missing wizard answers in a non-interactive terminal.</p>
 
+    <h2>What you see while it works</h2>
+    <p>The command identifies the selected stack and project, then reports a numbered pipeline: platform detection, runtime resolution, environment creation, framework or starter-file generation, and configuration. Each completed stage receives a checkmark. A final <code>DONE</code> message is followed by the exact <code>cd</code>, <code>run</code>, and <code>shell</code> commands for the new project.</p>
+
     <h2>Supported project kinds</h2>
+    <p>Go, Rust, PHP, and C# are language-only stacks with no framework prompt. The Python and Ruby framework list is unchanged.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th scope="col">Language</th><th scope="col">Framework choices</th><th scope="col">Language only</th><th scope="col">Default version</th></tr></thead>
@@ -42,6 +50,10 @@ manscript create java sample</code></pre>
           <tr><th scope="row">C</th><td>None</td><td><code>c</code></td><td>System compiler</td></tr>
           <tr><th scope="row">C++</th><td>None</td><td><code>cpp</code></td><td>System compiler</td></tr>
           <tr><th scope="row">Java</th><td>None</td><td><code>java</code></td><td>JDK 17+</td></tr>
+          <tr><th scope="row">Go</th><td>None</td><td><code>go</code></td><td>Go 1.25</td></tr>
+          <tr><th scope="row">Rust</th><td>None</td><td><code>rust</code></td><td>Rust stable</td></tr>
+          <tr><th scope="row">PHP</th><td>None</td><td><code>php</code></td><td>PHP 8.4</td></tr>
+          <tr><th scope="row">C#</th><td>None</td><td><code>csharp</code></td><td>.NET 10</td></tr>
         </tbody>
       </table>
     </div>
@@ -53,9 +65,10 @@ manscript create java sample</code></pre>
       <li><strong>Flask:</strong> an application with Flask development server and pytest commands.</li>
       <li><strong>Rails:</strong> a Rails project using SQLite, with run, test, and <code>bin/rails assets:precompile</code> build commands.</li>
       <li><strong>Sinatra:</strong> <code>app.rb</code>, a Gemfile, and a Ruby run command.</li>
-      <li><strong>Language only:</strong> starter source files and suitable run/build commands for Python, Ruby, C, C++, or Java.</li>
+      <li><strong>Language only:</strong> starter source and manifest files with suitable commands for Python, Ruby, C, C++, Java, Go, Rust, PHP, or C#.</li>
     </ul>
-    <p>All variants include <code>manscript.toml</code>, a project environment under <code>.manscript/environment</code>, and ManScript entries in <code>.gitignore</code>.</p>
+    <p>Go projects include <code>go.mod</code> and <code>main.go</code>; Rust projects include <code>Cargo.toml</code> and <code>src/main.rs</code>; PHP projects include <code>composer.json</code> and <code>main.php</code>; C# projects include <code>Program.cs</code> and a sanitized <code>.csproj</code> name. All variants include <code>manscript.toml</code>, a project environment under <code>.manscript/environment</code>, and ManScript entries in <code>.gitignore</code>.</p>
+    <p>By default, runtime setup prefers a suitable system installation. If Go, Rust, PHP, or .NET is unavailable, ManScript can offer a confirmed mise-managed fallback below <code>MANSCRIPT_HOME</code>; an explicit runtime provider overrides that order. Dependency preparation then runs the language's direct argv workflow: <code>go mod download</code>, <code>cargo fetch</code>, <code>composer install</code>, or <code>dotnet restore</code>.</p>
 
     <h2>Generate inside a project</h2>
     <p>Run from the project root or a child directory. Python app and module names for Django, Flask, and FastAPI cannot contain hyphens; use letters, numbers, and underscores. Django model names must start with a letter and use letters, numbers, or underscores.</p>

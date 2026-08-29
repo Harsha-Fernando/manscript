@@ -30,7 +30,12 @@ impl LanguageAdapter for PythonAdapter {
         "venv"
     }
 
-    fn create_environment(&self, project: &Project, runtime: &Runtime) -> Result<Environment> {
+    fn create_environment(
+        &self,
+        project: &Project,
+        runtime: &Runtime,
+        _confirm: crate::adapters::traits::ConfirmPolicy,
+    ) -> Result<Environment> {
         let root = project.environment_dir();
         ensure_dir(root.parent().unwrap_or(Path::new(".")))?;
         let prepared = PreparedCommand {

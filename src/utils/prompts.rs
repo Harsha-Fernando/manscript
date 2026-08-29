@@ -10,7 +10,7 @@ use owo_colors::OwoColorize;
 
 use crate::core::errors::{ManscriptError, Result};
 
-const BOX_WIDTH: usize = 56;
+const PROMPT_WIDTH: usize = 56;
 const HINT: &str = "↑↓ move  ·  enter select  ·  esc cancel";
 
 #[derive(Clone, Copy)]
@@ -198,7 +198,7 @@ fn render_select_frame(title: &str, choices: &[Choice<'_>], idx: usize, live: bo
         let c = &choices[idx];
         body.push(option_row(c.label, true, false));
     }
-    let mut lines = paint_box(title, &body, live);
+    let mut lines = paint_prompt(title, &body, live);
     if live {
         lines.push(dim_line(&format!(" {HINT}")));
     }
@@ -213,13 +213,13 @@ fn render_text_frame(
     live: bool,
 ) -> Vec<String> {
     let body = if value.is_empty() && live {
-        vec![dim_text(&fit(placeholder, BOX_WIDTH.saturating_sub(4)))]
+        vec![dim_text(&fit(placeholder, PROMPT_WIDTH.saturating_sub(4)))]
     } else if live {
         vec![format!("{}█", value.cyan())]
     } else {
         vec![value.cyan().to_string()]
     };
-    let mut lines = paint_box(title, &body, live);
+    let mut lines = paint_prompt(title, &body, live);
     if live && !hint.is_empty() {
         lines.push(dim_line(&format!(" {hint}")));
     }
@@ -227,7 +227,7 @@ fn render_text_frame(
 }
 
 fn option_row(text: &str, selected: bool, live: bool) -> String {
-    let inner_w = BOX_WIDTH.saturating_sub(4);
+    let inner_w = PROMPT_WIDTH.saturating_sub(4);
     let prefix = if selected && live { "› " } else { "  " };
     let room = inner_w.saturating_sub(prefix.chars().count());
     let content = fit(text, room);
@@ -239,39 +239,17 @@ fn option_row(text: &str, selected: bool, live: bool) -> String {
     }
 }
 
-fn paint_box(title: &str, body: &[String], live: bool) -> Vec<String> {
-    let mut lines = Vec::new();
-    lines.push(color_border(&box_top(title), live));
-    for row in body {
-        let inner = visible_pad(row, BOX_WIDTH.saturating_sub(4));
-        lines.push(format!("{} {inner} {}", dim_text(" │"), dim_text("│")));
-    }
-    lines.push(color_border(&box_bottom(), live));
-    lines
-}
-
-fn box_top(title: &str) -> String {
-    let label = format!(" {title} ");
-    let inner = BOX_WIDTH.saturating_sub(2);
-    let fill = inner.saturating_sub(label.chars().count());
-    format!(" ┌{label}{}┐", "─".repeat(fill))
-}
-
-fn box_bottom() -> String {
-    format!(" └{}┘", "─".repeat(BOX_WIDTH.saturating_sub(2)))
-}
-
-fn color_border(s: &str, _live: bool) -> String {
-    dim_text(s)
-}
-
-fn visible_pad(colored: &str, width: usize) -> String {
-    let vis = plain(colored).chars().count();
-    if vis >= width {
-        colored.to_string()
+fn paint_prompt(title: &str, body: &[String], live: bool) -> Vec<String> {
+    let marker = if live {
+        "?".cyan().bold().to_string()
     } else {
-        format!("{colored}{}", " ".repeat(width - vis))
+        "✓".green().bold().to_string()
+    };
+    let mut lines = vec![format!(" {marker} {}", title.bold())];
+    for row in body {
+        lines.push(format!("   {}", row.trim_end()));
     }
+    lines
 }
 
 fn fit(s: &str, width: usize) -> String {
@@ -284,26 +262,6 @@ fn fit(s: &str, width: usize) -> String {
         let take = width.saturating_sub(1);
         format!("{}…", s.chars().take(take).collect::<String>())
     }
-}
-
-fn plain(s: &str) -> String {
-    let mut out = String::new();
-    let mut chars = s.chars().peekable();
-    while let Some(c) = chars.next() {
-        if c == '\u{1b}' {
-            if chars.peek() == Some(&'[') {
-                chars.next();
-                for x in chars.by_ref() {
-                    if x.is_ascii_alphabetic() {
-                        break;
-                    }
-                }
-            }
-        } else {
-            out.push(c);
-        }
-    }
-    out
 }
 
 fn dim_text(s: &str) -> String {
@@ -321,6 +279,10 @@ pub fn pretty_language(id: &str) -> String {
         "c" => "C        — native compiled applications".into(),
         "cpp" => "C++      — native C++ applications".into(),
         "java" => "Java     — JDK-based applications".into(),
+        "go" => "Go       — modules and compiled Go applications".into(),
+        "rust" => "Rust     — Cargo-based native applications".into(),
+        "php" => "PHP      — Composer-based PHP applications".into(),
+        "csharp" => "C#       — .NET applications".into(),
         other => other.to_string(),
     }
 }
@@ -352,6 +314,26 @@ pub fn language_choice(id: &str) -> Choice<'static> {
             label: "Java",
             hint: "JDK-based applications",
         },
+        "go" => Choice {
+            id: "go",
+            label: "Go",
+            hint: "modules and compiled applications",
+        },
+        "rust" => Choice {
+            id: "rust",
+            label: "Rust",
+            hint: "Cargo-based native applications",
+        },
+        "php" => Choice {
+            id: "php",
+            label: "PHP",
+            hint: "Composer-based applications",
+        },
+        "csharp" => Choice {
+            id: "csharp",
+            label: "C#",
+            hint: ".NET applications",
+        },
         _ => Choice {
             id: "python",
             label: "Unknown",
@@ -364,6 +346,10 @@ pub fn language_picker_rank(id: &str) -> u8 {
     match id {
         "python" => 0,
         "ruby" => 1,
+        "go" => 2,
+        "rust" => 3,
+        "php" => 4,
+        "csharp" => 5,
         _ => 10,
     }
 }

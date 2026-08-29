@@ -31,7 +31,7 @@ printf '%s\n' "$MANSCRIPT_HOME"
 $env:MANSCRIPT_HOME</code></pre>
 
     <h2>3. Remove project environments (optional)</h2>
-    <p>Each configured project keeps its isolated environment under <code>.manscript/environment</code>. Removing it preserves source and <code>manscript.toml</code>; a later <code>manscript setup</code> can recreate it.</p>
+    <p>Each configured project keeps its isolated environment under <code>.manscript/environment</code>. Go, Rust, PHP, and C# also keep redirected module, package, build-cache, or CLI state under the project's <code>.manscript</code> directory. Removing that directory preserves source and <code>manscript.toml</code>; a later <code>manscript setup</code> can recreate it. Language-owned output elsewhere in the project, such as PHP's <code>vendor/</code>, is not removed automatically.</p>
     <h3>macOS and Linux</h3>
     <pre><code>rm -rf /path/to/project/.manscript</code></pre>
     <h3>Windows PowerShell</h3>
@@ -42,7 +42,7 @@ $env:MANSCRIPT_HOME</code></pre>
     <p>Typical files include <code>~/.zshrc</code>, <code>~/.bashrc</code>, fish configuration, or your PowerShell profile. Do not delete the whole startup file.</p>
 
     <h2>What remains</h2>
-    <p>Uninstalling ManScript does not remove Rust, Python, Ruby, Java, compilers, application source, or packages outside ManScript's own project/cache directories. Remove rustup separately only if you no longer use Rust; see the <a href="https://rust-lang.github.io/rustup/installation/index.html">rustup uninstall documentation</a>.</p>
+    <p>Uninstalling ManScript does not remove Python, Ruby, C/C++ compilers, Java, Go, Rust, PHP, Composer, the .NET SDK, application source, or packages outside ManScript's own project/cache directories. Remove rustup separately only if you no longer use Rust; see the <a href="https://rust-lang.github.io/rustup/installation/index.html">rustup uninstall documentation</a>.</p>
     <p><a class="button" href="install.html">Install again</a></p>
   </main>
   <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html" aria-current="page">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>

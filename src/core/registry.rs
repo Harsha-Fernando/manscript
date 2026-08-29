@@ -71,7 +71,7 @@ impl AdapterRegistry {
     pub fn default_provider_id(language: &str) -> &'static str {
         match language {
             "python" => "uv",
-            "ruby" => "mise",
+            "ruby" | "go" | "rust" | "php" | "csharp" => "mise",
             _ => "system",
         }
     }
@@ -134,6 +134,10 @@ pub fn default_registry() -> AdapterRegistry {
     registry.register_language(Box::new(crate::adapters::c::CAdapter));
     registry.register_language(Box::new(crate::adapters::cpp::CppAdapter));
     registry.register_language(Box::new(crate::adapters::java::JavaAdapter));
+    registry.register_language(Box::new(crate::adapters::go::GoAdapter));
+    registry.register_language(Box::new(crate::adapters::rust::RustAdapter));
+    registry.register_language(Box::new(crate::adapters::php::PhpAdapter));
+    registry.register_language(Box::new(crate::adapters::csharp::CsharpAdapter));
     registry.register_framework(Box::new(
         crate::adapters::python::frameworks::plain::PlainPythonFramework,
     ));
@@ -143,6 +147,12 @@ pub fn default_registry() -> AdapterRegistry {
     registry.register_framework(Box::new(crate::adapters::c::plain::PlainCFramework));
     registry.register_framework(Box::new(crate::adapters::cpp::plain::PlainCppFramework));
     registry.register_framework(Box::new(crate::adapters::java::plain::PlainJavaFramework));
+    registry.register_framework(Box::new(crate::adapters::go::plain::PlainGoFramework));
+    registry.register_framework(Box::new(crate::adapters::rust::plain::PlainRustFramework));
+    registry.register_framework(Box::new(crate::adapters::php::plain::PlainPhpFramework));
+    registry.register_framework(Box::new(
+        crate::adapters::csharp::plain::PlainCsharpFramework,
+    ));
     registry.register_framework(Box::new(
         crate::adapters::python::frameworks::django::DjangoFramework,
     ));
@@ -160,7 +170,7 @@ pub fn default_registry() -> AdapterRegistry {
     ));
     registry.register_provider(Box::new(crate::runtime::system::SystemRuntimeProvider));
     registry.register_provider(Box::new(crate::runtime::uv::UvPythonProvider));
-    registry.register_provider(Box::new(crate::runtime::mise::MiseRubyProvider));
+    registry.register_provider(Box::new(crate::runtime::mise::MiseProvider));
     registry
 }
 
@@ -207,10 +217,22 @@ mod tests {
         assert!(r.framework("c").unwrap().language_only());
         assert!(r.framework("cpp").unwrap().language_only());
         assert!(r.framework("java").unwrap().language_only());
+        assert!(r.framework("go").unwrap().language_only());
+        assert!(r.framework("rust").unwrap().language_only());
+        assert!(r.framework("php").unwrap().language_only());
+        assert!(r.framework("csharp").unwrap().language_only());
         assert!(r.frameworks_for_language("c").is_empty());
         assert!(r.frameworks_for_language("java").is_empty());
         assert!(r.framework("flask").unwrap().generators()[0].id == "blueprint");
         assert!(r.framework("fastapi").unwrap().generators()[0].id == "router");
         assert!(r.framework("sinatra").unwrap().generators()[0].id == "routes");
+    }
+
+    #[test]
+    fn new_languages_use_managed_fallbacks() {
+        for language in ["go", "rust", "php", "csharp"] {
+            assert_eq!(AdapterRegistry::default_provider_id(language), "mise");
+        }
+        assert_eq!(AdapterRegistry::default_provider_id("java"), "system");
     }
 }

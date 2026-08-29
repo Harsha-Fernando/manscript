@@ -14,7 +14,10 @@ impl RuntimeProvider for SystemRuntimeProvider {
     }
 
     fn supports(&self, language: &str) -> bool {
-        matches!(language, "python" | "ruby" | "c" | "cpp" | "java")
+        matches!(
+            language,
+            "python" | "ruby" | "c" | "cpp" | "java" | "go" | "rust" | "php" | "csharp"
+        )
     }
 
     fn detect(&self, language: &str, version: &str) -> Result<Option<Runtime>> {
@@ -24,6 +27,10 @@ impl RuntimeProvider for SystemRuntimeProvider {
             "c" => detect_compiler("c", &["cc", "clang", "gcc"]),
             "cpp" => detect_compiler("cpp", &["c++", "clang++", "g++"]),
             "java" => detect_java(version),
+            "go" => probe("go", "go", version, "version"),
+            "rust" => probe("rust", "rustc", version, "--version"),
+            "php" => probe("php", "php", version, "--version"),
+            "csharp" => probe("csharp", "dotnet", version, "--version"),
             _ => Ok(None),
         }
     }
@@ -93,6 +100,9 @@ fn probe_any(language: &str, program: &str, version_flag: &str) -> Result<Option
         Err(_) => return Ok(None),
     };
     let output = Command::new(&path).arg(version_flag).output()?;
+    if !output.status.success() {
+        return Ok(None);
+    }
     let text = format!(
         "{}{}",
         String::from_utf8_lossy(&output.stdout),
@@ -149,7 +159,6 @@ fn probe(
 }
 
 fn extract_version(text: &str) -> Option<String> {
-    let mut best = None;
     for token in text.split_whitespace() {
         let cleaned = token.trim_matches(|c: char| !c.is_ascii_digit() && c != '.');
         if cleaned
@@ -157,10 +166,10 @@ fn extract_version(text: &str) -> Option<String> {
             .all(|p| !p.is_empty() && p.chars().all(|c| c.is_ascii_digit()))
             && cleaned.contains('.')
         {
-            best = Some(cleaned.to_string());
+            return Some(cleaned.to_string());
         }
     }
-    best
+    None
 }
 
 fn major_minor(version: &str) -> String {
@@ -179,4 +188,29 @@ pub fn probe_version(executable: &std::path::Path, args: &[&str]) -> Result<Opti
         String::from_utf8_lossy(&output.stderr)
     );
     Ok(extract_version(&text))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extracts_the_primary_runtime_version() {
+        assert_eq!(
+            extract_version("PHP 8.4.2 (cli) (built: Jan 1 2026) Zend Engine v4.4.2"),
+            Some("8.4.2".into())
+        );
+        assert_eq!(
+            extract_version("go version go1.25.1 darwin/arm64"),
+            Some("1.25.1".into())
+        );
+    }
+
+    #[test]
+    fn supports_planned_language_runtimes() {
+        let provider = SystemRuntimeProvider;
+        for language in ["go", "rust", "php", "csharp"] {
+            assert!(provider.supports(language));
+        }
+    }
 }

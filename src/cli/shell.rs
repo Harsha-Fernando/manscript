@@ -6,7 +6,7 @@ use crate::core::errors::{ManscriptError, Result};
 use crate::core::project::Project;
 use crate::core::registry::AdapterRegistry;
 use crate::process::{Executor, PreparedCommand};
-use crate::utils::output::Printer;
+use crate::utils::output::{display_name, Printer};
 
 pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     let printer = Printer::new();
@@ -28,13 +28,15 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
         resolve_shell_program(),
     ))?;
     if code != 0 {
+        printer.blank();
         printer.warn(&format!(
             "Development shell closed with exit code {code}. Your original terminal environment is unchanged."
         ));
         std::process::exit(code);
     }
-    printer.success(
+    printer.command_done(
         "Development shell closed. Your original terminal environment is unchanged. Goodbye.",
+        &[],
     );
     Ok(())
 }
@@ -84,7 +86,10 @@ fn print_banner(printer: &Printer, project: &Project) {
     let project_name = terminal_text(&project.config.name);
     let language = terminal_text(project.language());
     let language_version = terminal_text(project.language_version());
-    printer.info("ManScript development shell");
+    printer.command_intro(
+        "Development shell",
+        "Project tools are available only inside this child session.",
+    );
     printer.key_value("Project", &project_name);
     printer.key_value(&display_name(&language), &language_version);
     if let Some(framework) = &project.config.framework {
@@ -95,17 +100,9 @@ fn print_banner(printer: &Printer, project: &Project) {
         );
     }
     printer.key_value("Environment", ".manscript/environment");
+    printer.section("Ready");
+    printer.muted("  Type `exit` to return to your original terminal.");
     printer.blank();
-    printer.muted("  Type `exit` to return to your normal shell.");
-    printer.blank();
-}
-
-fn display_name(name: &str) -> String {
-    let mut chars = name.chars();
-    match chars.next() {
-        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-        None => String::new(),
-    }
 }
 
 fn shell_prompt_name(name: &str) -> String {

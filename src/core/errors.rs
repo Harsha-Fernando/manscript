@@ -13,11 +13,11 @@ pub enum ManscriptError {
     #[error("This folder is not inside a ManScript project.\n\nManScript looked in the current folder and its parents but could not find `manscript.toml`.\n\nTo configure an existing project, run:\n\n    manscript init\n    manscript setup\n\nTo create a new project, run:\n\n    manscript create")]
     ProjectNotFound,
 
-    #[error("`{0}` is not a supported framework or language.\n\nSupported frameworks:\n  django, fastapi, flask, rails, sinatra\n\nLanguage-only projects:\n  python, ruby, c, cpp, java\n\nExamples:\n\n    manscript create django myproject\n    manscript create python myapp\n    manscript create c hello")]
+    #[error("`{0}` is not a supported framework or language.\n\nSupported frameworks:\n  django, fastapi, flask, rails, sinatra\n\nLanguage-only projects:\n  python, ruby, c, cpp, java, go, rust, php, csharp\n\nExamples:\n\n    manscript create django myproject\n    manscript create python myapp\n    manscript create go hello")]
     UnknownFramework(String),
 
     #[error(
-        "`{0}` is not a supported language.\n\nSupported languages:\n  python, ruby, c, cpp, java"
+        "`{0}` is not a supported language.\n\nSupported languages:\n  python, ruby, c, cpp, java, go, rust, php, csharp"
     )]
     UnknownLanguage(String),
 

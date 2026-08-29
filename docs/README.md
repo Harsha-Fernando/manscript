@@ -32,6 +32,8 @@ Mark the current local page with `aria-current="page"`. Each page also needs a s
 
 Before submitting changes, follow every relative HTML `href` and test keyboard focus, clickable code-copy blocks, narrow layouts, dark mode, and reduced motion.
 
+When language support changes, keep the Home, Create, Commands, Config, Install, Troubleshooting, Shell, and Uninstall pages synchronized. Document runtime fallback, dependency commands, project-local cache variables, and write boundaries as behavior rather than presenting language-only adapters as frameworks.
+
 ## Deployment
 
 In Vercel, import this repository and set **Root Directory** to `docs`. Do not use the repository root, where Vercel may detect `Cargo.toml` and attempt a Rust build.

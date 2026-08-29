@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Troubleshooting — ManScript</title>
-  <meta name="description" content="Troubleshoot ManScript doctor checks, PATH, missing projects and environments, runtimes, compilers, and JDK detection.">
+  <meta name="description" content="Troubleshoot ManScript doctor checks, PATH, projects, environments, language runtimes, package managers, compilers, and JDK detection.">
   <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,10 +13,11 @@
     <p class="eyebrow">Problem solving</p><h1>Troubleshooting</h1>
     <p class="lede">Start with the read-only diagnostic command. Its recommendations are tailored to the tools ManScript can detect.</p>
     <pre><code>manscript doctor</code></pre>
+    <p><code>WARN</code> means ManScript can explain a recoverable condition and suggest a next step. <code>ERROR</code> means the requested command could not continue. For plain output without ANSI color, set <code>NO_COLOR=1</code>.</p>
 
     <h2>What doctor checks</h2>
-    <p>Doctor reports the platform and ManScript version, then checks Python and its <code>venv</code> module, pip or uv, Ruby and Bundler, C and C++ compilers, and <code>javac</code>. When run inside a configured project, it also reports project identity and environment readiness.</p>
-    <p>A failed system-runtime check does not always block Python or Ruby: <code>manscript setup</code> may prepare an isolated runtime after confirmation. Compiler and JDK failures do block their languages because ManScript 0.1.3 does not download those toolchains.</p>
+    <p>Doctor reports the platform and ManScript version, then checks Python and its <code>venv</code> module, pip or uv, Ruby and Bundler, C and C++ compilers, <code>javac</code>, Go, Rust and Cargo, PHP and Composer, and the .NET SDK. When run inside a configured project, it also reports project identity and environment readiness.</p>
+    <p>Doctor reports system tools and remains read-only. A failed system-runtime check does not always block setup: Python can use uv, while Ruby, Go, Rust, PHP, and C# can use a confirmed mise-managed fallback. Compiler and JDK failures still block C, C++, and Java because ManScript does not download those toolchains.</p>
 
     <h2 id="path"><code>manscript: command not found</code></h2>
     <ol>
@@ -59,6 +60,21 @@ manscript env</code></pre>
     <p>Setup can prepare Ruby through mise and installs Bundler for the project when necessary. Ruby dependencies and Bundler state are isolated through <code>.bundle/config</code> and <code>.manscript/environment</code>.</p>
     <pre><code>manscript setup
 manscript shell</code></pre>
+
+    <h2>Go, Rust, PHP, or .NET runtime not detected</h2>
+    <p>Run <code>manscript setup</code>. Unless an explicit runtime provider is configured, ManScript checks for a suitable system runtime first, then asks before preparing a mise-managed fallback below <code>MANSCRIPT_HOME</code>. Use <code>--yes</code> only when you intend to accept that download noninteractively.</p>
+    <p>Rust also needs Cargo. PHP projects require a verified system Composer executable even when PHP itself comes from mise; install Composer using its official verified instructions and keep it on <code>PATH</code>. ManScript does not run an unverified Composer bootstrap installer.</p>
+    <pre><code>go version
+rustc --version
+cargo --version
+php --version
+composer --version
+dotnet --version
+manscript doctor
+manscript setup</code></pre>
+
+    <h2>Dependency setup fails</h2>
+    <p>Setup and install directly run <code>go mod download</code>, <code>cargo fetch</code>, <code>composer install</code>, or <code>dotnet restore</code>. Read the package manager's error for registry, lock-file, manifest, or network details. Their module, package, build-cache, and CLI-state variables point below the project root, so check that the project is writable and has enough disk space.</p>
 
     <h2>C or C++ compiler not detected</h2>
     <p>Install a real system compiler and ensure <code>cc</code> or <code>c++</code> is on <code>PATH</code>. On macOS, install Xcode Command Line Tools. On Linux, install GCC or Clang. On Windows, use LLVM or MinGW; a launcher stub that cannot compile is not sufficient.</p>

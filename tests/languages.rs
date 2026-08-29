@@ -4,15 +4,26 @@ use manscript::core::registry::default_registry;
 use manscript::process::executor::split_command_line;
 
 #[test]
-fn c_cpp_java_are_language_only() {
+fn compiled_and_interpreted_stacks_are_language_only() {
     let r = default_registry();
-    for id in ["c", "cpp", "java"] {
+    for id in ["c", "cpp", "java", "go", "rust", "php", "csharp"] {
         let fw = r.framework(id).unwrap();
         assert!(fw.language_only());
         assert_eq!(fw.language(), id);
         assert!(fw.generators().is_empty());
         assert!(r.frameworks_for_language(id).is_empty());
     }
+}
+
+#[test]
+fn new_language_commands_split_without_a_shell() {
+    assert_eq!(split_command_line("go run .").unwrap(), ["go", "run", "."]);
+    assert_eq!(split_command_line("cargo run").unwrap(), ["cargo", "run"]);
+    assert_eq!(
+        split_command_line("php main.php").unwrap(),
+        ["php", "main.php"]
+    );
+    assert_eq!(split_command_line("dotnet run").unwrap(), ["dotnet", "run"]);
 }
 
 #[test]

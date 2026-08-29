@@ -17,6 +17,8 @@ Do not open a public issue for a security problem. Contact the maintainers priva
 
 ManScript executes language runtimes, package managers, compilers, and project commands on the user's behalf. Review a cloned project's `manscript.toml` before running `manscript setup`, `install`, `run`, `test`, or `build`. Treat the file as trusted executable configuration, similar to a Makefile.
 
+The Go, Rust, PHP, and C# language adapters use the same boundary as existing adapters. Runtime resolution prefers a suitable system installation and can, after confirmation, fall back to mise-managed tools below `MANSCRIPT_HOME`. Dependency setup invokes `go mod download`, `cargo fetch`, `composer install`, or `dotnet restore` directly; it does not construct shell command strings. If Composer is absent, ManScript downloads its official installer and published SHA-384 signature over HTTPS, verifies the installer with the selected PHP runtime, and only then executes it to create a project-local Composer PHAR.
+
 ManScript does not:
 
 - Invoke `sudo` or deliberately raise privileges
@@ -47,8 +49,8 @@ This reduces shell-injection risk; it does not make an untrusted executable or d
 
 On Unix and macOS, the executable comes from `SHELL`, with `/bin/sh` as the fallback. On Windows, it comes from `COMSPEC`, with `powershell.exe` as the fallback. `MANSCRIPT_SHELL` is an explicit diagnostic and test override. Each value selects one executable path; it is not parsed into a command and arguments.
 
-The child receives project tool paths and adapter-specific variables. On Unix, ManScript also supplies a sanitized project prompt. The environment changes exist only in that child process. Exiting it returns to the original terminal environment.
+The child receives project tool paths and adapter-specific variables. Go module/build caches and `GOPATH`, Rust Cargo home and target output, Composer home, and NuGet/.NET CLI state are redirected into the project. On Unix, ManScript also supplies a sanitized project prompt. The environment changes exist only in that child process. Exiting it returns to the original terminal environment.
 
 ## Files and downloads
 
-Project environments are written below `.manscript/environment`. Runtime providers may download tools below `MANSCRIPT_HOME`, or `~/.manscript` when that variable is unset. ManScript does not use `sudo`; users should still verify repository and package sources before installing dependencies.
+Project environments and language dependency/cache state are written below the project root, primarily under `.manscript`; normal language outputs such as `vendor/` remain within that root. Runtime providers may download tools below `MANSCRIPT_HOME`, or `~/.manscript` when that variable is unset. ManScript does not use `sudo`, write runtime state outside these bounds, or bootstrap Composer with an unverified installer; users should still verify repository and package sources before installing dependencies.

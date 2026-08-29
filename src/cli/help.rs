@@ -13,7 +13,8 @@ pub fn print_from_args(args: impl IntoIterator<Item = String>) {
 
 pub fn print_version() {
     let printer = Printer::new();
-    printer.line(&format!("manscript {}", env!("CARGO_PKG_VERSION")));
+    print_wordmark(&printer);
+    printer.info(&format!("ManScript  v{}", env!("CARGO_PKG_VERSION")));
 }
 
 /// `manscript -h` → None; `manscript create -h` / `manscript help run` → Some(cmd).
@@ -31,6 +32,7 @@ pub fn help_topic(args: impl IntoIterator<Item = String>) -> Option<String> {
 fn print_root_help() {
     let printer = Printer::new();
     let cmd = Cli::command();
+    print_wordmark(&printer);
     printer.info(&format!("ManScript  v{}", env!("CARGO_PKG_VERSION")));
     if let Some(about) = cmd.get_about() {
         printer.blank();
@@ -165,6 +167,15 @@ fn usage_line(sub: &Command) -> String {
         }
     }
     parts.join(" ")
+}
+
+fn print_wordmark(printer: &Printer) {
+    printer.line("  ███╗   ███╗ █████╗ ███╗   ██╗███████╗ ██████╗██████╗ ██╗██████╗ ████████╗");
+    printer.line("  ████╗ ████║██╔══██╗████╗  ██║██╔════╝██╔════╝██╔══██╗██║██╔══██╗╚══██╔══╝");
+    printer.line("  ██╔████╔██║███████║██╔██╗ ██║███████╗██║     ██████╔╝██║██████╔╝   ██║   ");
+    printer.line("  ██║╚██╔╝██║██╔══██║██║╚██╗██║╚════██║██║     ██╔══██╗██║██╔═══╝    ██║   ");
+    printer.line("  ██║ ╚═╝ ██║██║  ██║██║ ╚████║███████║╚██████╗██║  ██║██║██║        ██║   ");
+    printer.blank();
 }
 
 fn print_rows(printer: &Printer, title: &str, rows: &[(&str, String)]) {

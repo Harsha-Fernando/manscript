@@ -4,6 +4,35 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-30
+
+### Added
+
+- Added language-only project support for Go 1.25, Rust stable (edition 2024), PHP 8.4, and C#/.NET 10, including starter files and suitable run, test, and build commands
+- Added system-runtime-first resolution with a confirmed mise-managed fallback under `MANSCRIPT_HOME`
+- Added project-local dependency and cache environments for Go modules, Cargo, Composer, NuGet, and .NET CLI state
+- Added dependency setup through direct `go mod download`, `cargo fetch`, `composer install`, and `dotnet restore` argv execution
+
+### Changed
+
+- Introduced a compact, consistent command presentation with purpose lines, aligned project context, completion summaries, and relevant next actions
+- Kept the full ManScript wordmark on root help and version output while keeping individual command output compact
+- Unified `create` and `setup` around numbered progress pipelines and refined the development-shell entry and exit states
+- Replaced boxed interactive prompts with a lighter keyboard-driven selection layout
+- Standardized status and no-op output across init, install, run, test, build, doctor, env, and completions
+- Clarified that language environments are the primary direction and framework work is maintenance- and demand-driven
+
+### Security
+
+- Kept new language setup and dependency operations shell-free and sudo-free, with writes bounded to the project root or configured `MANSCRIPT_HOME`
+- Added a confirmed project-local Composer bootstrap that verifies the official installer's SHA-384 signature before execution
+
+### Fixed
+
+- Prevented direct completion commands from flooding interactive terminals with generated code
+- Made generated zsh completion code initialize `compinit` when `compdef` is unavailable
+- Changed completion guidance to show the command users should evaluate instead of the raw generator invocation
+
 ## [0.1.3] - 2026-08-29
 
 ### UX and documentation

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Development shell — ManScript</title>
-  <meta name="description" content="Use ManScript's temporary project-aware child shell for Python, Ruby, C, C++, and Java tools.">
+  <meta name="description" content="Use ManScript's temporary project-aware child shell for Python, Ruby, C, C++, Java, Go, Rust, PHP, and C# tools.">
   <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,6 +12,8 @@
   <main id="main">
     <p class="eyebrow">Project tools on demand</p><h1>Development shell</h1>
     <p class="lede"><code>manscript shell</code> opens an interactive child shell in the project root. Managed project tools come first on that child's <code>PATH</code>; your original terminal is not modified.</p>
+
+    <p>The entry summary labels the project, stack versions, and environment, then shows a <strong>Ready</strong> section before handing control to the child shell. The prompt itself may still look unchanged because zsh, bash, or another shell can replace ManScript's suggested prompt from its startup configuration.</p>
 
     <h2>Prepare the project first</h2>
     <p>The command requires both <code>manscript.toml</code> and a ready project environment.</p>
@@ -29,6 +31,10 @@ manscript shell</code></pre>
           <tr><th scope="row">Ruby</th><td>Prepends project and Ruby gem bin directories and sets <code>GEM_HOME</code>, <code>GEM_PATH</code>, <code>BUNDLE_PATH</code>, <code>BUNDLE_BIN</code>, <code>BUNDLE_GEMFILE</code>, and, when available, <code>RUBY_ROOT</code>.</td></tr>
           <tr><th scope="row">C and C++</th><td>Prepends the project tool bin containing shims to the system compiler detected during setup.</td></tr>
           <tr><th scope="row">Java</th><td>Prepends project shims for the detected system <code>javac</code> and <code>java</code>.</td></tr>
+          <tr><th scope="row">Go</th><td>Prepends the mapped <code>go</code> tool and sets project-local <code>GOMODCACHE</code>, <code>GOCACHE</code>, and <code>GOPATH</code>.</td></tr>
+          <tr><th scope="row">Rust</th><td>Prepends mapped <code>rustc</code> and <code>cargo</code> tools and sets project-local <code>CARGO_HOME</code> and <code>CARGO_TARGET_DIR</code>.</td></tr>
+          <tr><th scope="row">PHP</th><td>Prepends mapped PHP/Composer tools and <code>vendor/bin</code>, and sets project-local <code>COMPOSER_HOME</code>.</td></tr>
+          <tr><th scope="row">C#</th><td>Prepends the mapped <code>dotnet</code> tool and project .NET tools, and sets project-local <code>NUGET_PACKAGES</code> and <code>DOTNET_CLI_HOME</code> plus noninteractive CLI defaults.</td></tr>
         </tbody>
       </table>
     </div>

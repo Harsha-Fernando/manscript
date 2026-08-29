@@ -159,6 +159,13 @@ impl Printer {
         println_tag(" INFO ", TagKind::Info, msg);
     }
 
+    pub fn command_intro(&self, command: &str, purpose: &str) {
+        self.info(command);
+        if !purpose.is_empty() {
+            self.muted(&format!("  {purpose}"));
+        }
+    }
+
     pub fn warn(&self, msg: &str) {
         if self.quiet {
             return;
@@ -171,6 +178,12 @@ impl Printer {
             return;
         }
         println_tag("  DONE ", TagKind::Ok, msg);
+    }
+
+    pub fn command_done(&self, message: &str, next_steps: &[&str]) {
+        self.blank();
+        self.success(message);
+        self.next_steps(next_steps);
     }
 
     pub fn hint_command(&self, line: &str) {
@@ -278,6 +291,14 @@ impl Printer {
             done: false,
             held_depth: true,
         }
+    }
+}
+
+pub fn display_name(value: &str) -> String {
+    let mut chars = value.chars();
+    match chars.next() {
+        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
     }
 }
 
@@ -503,11 +524,14 @@ pub fn print_missing_completion_shell() {
     eprintln!("  Supported shells:");
     eprintln!("    bash, zsh, fish, powershell, elvish");
     eprintln!();
-    eprintln!("  Example:");
+    eprintln!("  Enable zsh completion for this terminal:");
     if stderr_color() {
-        eprintln!("    {}", "manscript completions zsh".cyan().bold());
+        eprintln!(
+            "    {}",
+            "eval \"$(manscript completions zsh)\"".cyan().bold()
+        );
     } else {
-        eprintln!("    manscript completions zsh");
+        eprintln!("    eval \"$(manscript completions zsh)\"");
     }
     eprintln!();
     eprintln!("  This command is optional. You only need it to enable tab completion.");

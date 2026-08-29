@@ -25,7 +25,12 @@ impl LanguageAdapter for CppAdapter {
         "toolchain"
     }
 
-    fn create_environment(&self, project: &Project, runtime: &Runtime) -> Result<Environment> {
+    fn create_environment(
+        &self,
+        project: &Project,
+        runtime: &Runtime,
+        _confirm: crate::adapters::traits::ConfirmPolicy,
+    ) -> Result<Environment> {
         toolchain::from_runtime(project, runtime, "c++")
     }
 

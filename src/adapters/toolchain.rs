@@ -21,6 +21,12 @@ pub fn create_toolchain_env(project: &Project, links: &[(&str, &Path)]) -> Resul
         let target = target
             .canonicalize()
             .unwrap_or_else(|_| target.to_path_buf());
+        let target_text = target.to_string_lossy();
+        if target_text.contains(['\n', '\r']) {
+            return Err(ManscriptError::InvalidCommand(
+                "toolchain path contains an unsupported control character".into(),
+            ));
+        }
         if name.contains('=') || name.contains('\n') || name.contains('\r') {
             return Err(ManscriptError::InvalidCommand(
                 "invalid toolchain name".into(),
@@ -28,7 +34,7 @@ pub fn create_toolchain_env(project: &Project, links: &[(&str, &Path)]) -> Resul
         }
         map.push_str(name);
         map.push('=');
-        map.push_str(&target.display().to_string());
+        map.push_str(&target_text);
         map.push('\n');
         #[cfg(unix)]
         {
@@ -40,6 +46,16 @@ pub fn create_toolchain_env(project: &Project, links: &[(&str, &Path)]) -> Resul
             }
             link_tool(&target, &dest)?;
         }
+        #[cfg(windows)]
+        {
+            let dest = bin.join(format!("{name}.cmd"));
+            if !is_under_root(&project.root, &dest)? {
+                return Err(ManscriptError::InvalidCommand(
+                    "refusing to write a toolchain shim outside the project".into(),
+                ));
+            }
+            write_windows_wrapper(&target, &dest)?;
+        }
     }
     crate::utils::filesystem::write_file(&tools_map_path(project), &map)?;
     Ok(Environment {
@@ -47,6 +63,12 @@ pub fn create_toolchain_env(project: &Project, links: &[(&str, &Path)]) -> Resul
         root,
         kind: EnvironmentKind::Toolchain,
     })
+}
+
+#[cfg(windows)]
+fn write_windows_wrapper(target: &Path, dest: &Path) -> Result<()> {
+    let escaped = target.to_string_lossy().replace('%', "%%");
+    crate::utils::filesystem::write_file(dest, &format!("@echo off\r\n\"{escaped}\" %*\r\n"))
 }
 
 pub fn toolchain_ready(project: &Project, names: &[&str]) -> bool {

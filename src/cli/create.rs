@@ -7,7 +7,7 @@ use crate::core::runtime::{Runtime, RuntimeSource};
 use crate::utils::filesystem::{
     default_gitignore, dir_is_empty_or_missing, ensure_dir, validate_project_name,
 };
-use crate::utils::output::Printer;
+use crate::utils::output::{display_name, Printer};
 use crate::utils::platform::platform_label;
 use crate::utils::prompts::{
     framework_choice, language_choice, language_picker_rank, resolve_none_to_language, select,
@@ -23,14 +23,20 @@ pub fn execute(
     yes: bool,
 ) -> Result<()> {
     let printer = Printer::new();
-    printer.info("Create");
     if let Ok(project) = Project::load(&env::current_dir()?) {
+        printer.command_intro(
+            "Create",
+            "Add a framework component to the current project.",
+        );
         return create_in_project(registry, project, framework, name, yes, &printer);
     }
+    printer.command_intro(
+        "Create",
+        "Build a new isolated project from a supported stack.",
+    );
     let confirm = ConfirmPolicy::from_yes_flag(yes);
 
     if framework.is_none() {
-        printer.blank();
         printer
             .muted("  Choose a language and framework, then ManScript will prepare the project.");
         printer.blank();
@@ -53,10 +59,8 @@ pub fn execute(
         }
     }
 
-    printer.info(&format!(
-        "Creating {} project: {project_name}",
-        capitalize(&framework_id)
-    ));
+    printer.key_value("Stack", &display_name(&framework_id));
+    printer.key_value("Project", &project_name);
     printer.blank();
 
     let total = (6 + fw.extra_create_steps()) as u64;
@@ -65,7 +69,7 @@ pub fn execute(
     progress.begin("Detecting platform");
     progress.ok(&platform_label());
 
-    progress.begin(&format!("Checking {}", capitalize(language)));
+    progress.begin(&format!("Checking {}", display_name(language)));
     let preferred = None;
     let detected = registry
         .providers()
@@ -76,21 +80,21 @@ pub fn execute(
     if let Some(ref rt) = detected {
         progress.ok(&format!(
             "{} {} detected ({})",
-            capitalize(language),
+            display_name(language),
             rt.version,
             rt.source.label()
         ));
     } else {
         progress.note(&format!(
             "{} {} was not found locally; ManScript will prepare it",
-            capitalize(language),
+            display_name(language),
             fw.default_language_version()
         ));
     }
 
     progress.begin(&format!(
         "Preparing {} {}",
-        capitalize(language),
+        display_name(language),
         fw.default_language_version()
     ));
     let runtime =
@@ -112,13 +116,13 @@ pub fn execute(
     };
 
     progress.begin("Creating environment");
-    lang.create_environment(&project, &runtime)?;
+    lang.create_environment(&project, &runtime, confirm)?;
     progress.ok("Environment created");
 
     if fw.language_only() {
         progress.begin("Creating project files");
     } else if fw.extra_create_steps() > 0 {
-        progress.begin(&format!("Installing {}", capitalize(&framework_id)));
+        progress.begin(&format!("Installing {}", display_name(&framework_id)));
     }
     let env = crate::core::environment::Environment {
         root: project.environment_dir(),
@@ -139,18 +143,19 @@ pub fn execute(
     if fw.language_only() {
         progress.ok("Starter files written");
     } else if fw.extra_create_steps() > 0 {
-        progress.ok(&format!("{} installed", capitalize(&framework_id)));
+        progress.ok(&format!("{} installed", display_name(&framework_id)));
         progress.begin("Creating project");
-        progress.ok(&format!("{} project created", capitalize(&framework_id)));
+        progress.ok(&format!("{} project created", display_name(&framework_id)));
     }
 
     progress.begin("Creating ManScript configuration");
     progress.ok("manscript.toml created");
     progress.finish();
-    printer.blank();
-    printer.success(&format!("Project `{project_name}` is ready."));
     let cd_command = format!("cd {project_name}");
-    printer.next_steps(&[&cd_command, "manscript run", "manscript shell"]);
+    printer.command_done(
+        &format!("Project `{project_name}` is ready."),
+        &[&cd_command, "manscript run", "manscript shell"],
+    );
     printer.blank();
     printer.muted(
         "  Use `manscript run` for the configured app command, or `manscript shell` for ad-hoc tools.",
@@ -290,8 +295,9 @@ fn create_in_project(
             lang.default_environment_manager(),
         ),
     };
+    printer.key_value("Project", &project.config.name);
+    printer.key_value("Adding", &format!("{kind} `{name}`"));
     printer.blank();
-    printer.info(&format!("Adding {kind} `{name}`"));
     let ctx = GenerateContext {
         project: &project,
         runtime: &runtime,
@@ -300,7 +306,10 @@ fn create_in_project(
         yes,
     };
     fw.generate(&ctx, &kind, &name)?;
-    printer.success(&format!("Added {kind} `{name}` to the project."));
+    printer.command_done(
+        &format!("Added {kind} `{name}` to the project."),
+        &["manscript run"],
+    );
     Ok(())
 }
 
@@ -398,12 +407,4 @@ fn pick_kind(gens: &[crate::adapters::traits::GeneratorSpec], yes: bool) -> Resu
         })
         .collect();
     select("What are we adding?", &choices, 0)
-}
-
-fn capitalize(s: &str) -> String {
-    let mut c = s.chars();
-    match c.next() {
-        None => String::new(),
-        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-    }
 }

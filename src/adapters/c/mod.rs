@@ -24,7 +24,12 @@ impl LanguageAdapter for CAdapter {
         "toolchain"
     }
 
-    fn create_environment(&self, project: &Project, runtime: &Runtime) -> Result<Environment> {
+    fn create_environment(
+        &self,
+        project: &Project,
+        runtime: &Runtime,
+        _confirm: crate::adapters::traits::ConfirmPolicy,
+    ) -> Result<Environment> {
         toolchain::from_runtime(project, runtime, "cc")
     }
 

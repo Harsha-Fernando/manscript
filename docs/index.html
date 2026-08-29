@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ManScript — Isolated development environments</title>
-  <meta name="description" content="Create, configure, and run Python, Ruby, C, C++, and Java projects in isolated development environments.">
+  <meta name="description" content="Create, configure, and run Python, Ruby, C, C++, Java, Go, Rust, PHP, and C# projects in isolated development environments.">
   <link rel="icon" type="image/png" href="static/favicon.png">
   <link rel="apple-touch-icon" href="static/favicon.png">
   <link rel="stylesheet" href="style.css">
@@ -19,16 +19,21 @@
   </header>
   <main id="main">
     <section class="hero" aria-labelledby="hero-title">
-      <p class="eyebrow">ManScript 0.1.3</p>
+      <p class="eyebrow">ManScript 0.1.4</p>
       <h1 id="hero-title">From project folder to running app</h1>
       <p class="lede">ManScript prepares an isolated environment from <code>manscript.toml</code>, then runs the right project tools without activation rituals or permanent PATH changes.</p>
       <p class="actions"><a class="button primary" href="install.html">Install ManScript</a><a class="button" href="commands.html">Browse commands</a></p>
     </section>
 
+    <aside class="callout">
+      <h2>What's new in 0.1.4</h2>
+      <p>Go, Rust, PHP, and C# language-only projects are now supported alongside Python, Ruby, C, C++, and Java. Framework support is unchanged.</p>
+    </aside>
+
     <section aria-labelledby="quick-start">
       <h2 id="quick-start">Quick start in three steps</h2>
       <div class="steps">
-        <article class="card"><span class="step-number" aria-hidden="true">1</span><h3>Create</h3><pre><code>manscript create</code></pre><p>Choose Python, Ruby, C, C++, or Java and an available framework.</p></article>
+        <article class="card"><span class="step-number" aria-hidden="true">1</span><h3>Create</h3><pre><code>manscript create</code></pre><p>Choose Python, Ruby, C, C++, Java, Go, Rust, PHP, or C# and an available project kind.</p></article>
         <article class="card"><span class="step-number" aria-hidden="true">2</span><h3>Enter the folder</h3><pre><code>cd myproject</code></pre><p>Use the project name you entered in the wizard.</p></article>
         <article class="card"><span class="step-number" aria-hidden="true">3</span><h3>Run</h3><pre><code>manscript run</code></pre><p>ManScript uses the project's managed environment and configured command.</p></article>
       </div>
@@ -64,7 +69,7 @@ manscript run</code></pre><p>Use this path when <code>manscript.toml</code> alre
 
     <aside class="callout">
       <h2>What stays unchanged</h2>
-      <p>Your system Python, Ruby, Java, compilers, parent terminal, and shell startup files remain yours. Project environments live under <code>.manscript/environment</code>; downloaded runtime tools use <code>~/.manscript</code> or <code>MANSCRIPT_HOME</code>.</p>
+      <p>Your system runtimes, compilers, parent terminal, and shell startup files remain yours. Project environments and language dependency/cache state stay below the project root; confirmed mise-managed runtime fallbacks use <code>~/.manscript</code> or <code>MANSCRIPT_HOME</code>.</p>
     </aside>
   </main>
   <footer class="site-footer">

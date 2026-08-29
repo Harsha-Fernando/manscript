@@ -6,7 +6,6 @@ use std::env;
 
 pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     let printer = Printer::new();
-    printer.info("Install");
     let project = Project::load(&env::current_dir()?)?;
     let lang = registry.language(project.language())?;
     if !lang.environment_ready(&project) {
@@ -14,11 +13,21 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
             project.environment_dir(),
         ));
     }
+    printer.command_intro(
+        "Install",
+        "Synchronize dependencies inside the project environment.",
+    );
+    printer.key_value("Project", &project.config.name);
+    printer.key_value("Environment", ".manscript/environment");
+    printer.blank();
     {
         let spin = printer.spinner("Installing dependencies");
         lang.install_dependencies(&project)?;
         spin.finish_ok("Dependencies installed");
     }
-    printer.success("Project dependencies are installed.");
+    printer.command_done(
+        "Project dependencies are installed.",
+        &["manscript run", "manscript shell"],
+    );
     Ok(())
 }

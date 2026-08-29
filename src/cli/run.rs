@@ -2,7 +2,7 @@ use crate::core::errors::{ManscriptError, Result};
 use crate::core::project::Project;
 use crate::core::registry::AdapterRegistry;
 use crate::process::Executor;
-use crate::utils::output::Printer;
+use crate::utils::output::{display_name, Printer};
 use std::env;
 
 pub fn execute_run(registry: &AdapterRegistry, args: &[String]) -> Result<()> {
@@ -61,8 +61,21 @@ fn execute_named(
         ));
     }
 
+    printer.command_intro(
+        &display_name(which),
+        match which {
+            "run" => "Run the configured application command.",
+            "test" => "Run the configured project test command.",
+            "build" => "Build the configured project artifacts.",
+            _ => "Run a project command.",
+        },
+    );
+    printer.key_value("Project", &project.config.name);
+    printer.key_value("Environment", ".manscript/environment");
+    printer.blank();
+
     if which == "build" && lang.ensure_artifacts(&project)? {
-        printer.info("Build finished.");
+        printer.command_done("Build finished.", &[]);
         return Ok(());
     }
 
@@ -74,9 +87,10 @@ fn execute_named(
     };
     let Some(command) = command else {
         if which == "build" || which == "test" {
-            printer.info(&format!(
-                "This project does not define a `{which}` command. Nothing was run."
-            ));
+            printer.command_done(
+                &format!("No `{which}` command is configured. Nothing was run."),
+                &[],
+            );
             return Ok(());
         }
         return Err(ManscriptError::Message(format!(
@@ -85,7 +99,7 @@ fn execute_named(
     };
 
     if which == "run" && is_framework_dev_server(registry, &project) {
-        printer.info("Starting development server.");
+        printer.section("Development server");
         if let Some(fw) = project.framework_name() {
             if let Some(url) = default_server_url(fw) {
                 printer.url(url);
@@ -103,6 +117,9 @@ fn execute_named(
         let code = Executor::new().run_inherit(prepared)?;
         if code != 0 {
             std::process::exit(code);
+        }
+        if which != "run" {
+            printer.command_done(&format!("{} finished.", display_name(which)), &[]);
         }
         Ok(())
     } else {

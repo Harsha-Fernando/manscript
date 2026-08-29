@@ -26,6 +26,12 @@ impl RuntimeSource {
 /// Normalize a language version string into a semver-ish comparator.
 /// "3.13" means any 3.13.x (and we also accept a matching prefix if parse fails).
 pub fn version_matches(installed: &str, required: &str) -> bool {
+    if matches!(
+        required.trim().to_ascii_lowercase().as_str(),
+        "stable" | "latest"
+    ) {
+        return !installed.trim().is_empty();
+    }
     let installed_n = normalize_version(installed);
     let required_n = normalize_version(required);
     if let (Ok(inst), Ok(req)) = (
@@ -85,5 +91,6 @@ mod tests {
         assert!(version_matches("3.14.6", "3.13"));
         assert!(!version_matches("3.12.0", "3.13"));
         assert!(version_matches("3.4.5", "3.4"));
+        assert!(version_matches("1.89.0", "stable"));
     }
 }

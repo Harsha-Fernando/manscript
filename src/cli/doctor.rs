@@ -7,7 +7,10 @@ use std::env;
 
 pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     let printer = Printer::new();
-    printer.info("ManScript Doctor");
+    printer.command_intro(
+        "Doctor",
+        "Check runtimes, toolchains, and the current project without changing them.",
+    );
 
     printer.section("Platform");
     printer.check_ok(&platform_label(), "");
@@ -60,19 +63,21 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
         }
     }
 
-    printer.blank();
     if failed {
+        printer.blank();
         printer.warn(if recommendations.len() == 1 {
             "Recommended next step"
         } else {
             "Recommended next steps"
         });
+        printer.muted("  Resolve the failed checks above, then run `manscript doctor` again.");
+        printer.blank();
         for rec in recommendations {
             printer.line(&rec);
             printer.blank();
         }
     } else {
-        printer.success("Everything looks good. ManScript is ready to use.");
+        printer.command_done("Everything looks good. ManScript is ready to use.", &[]);
     }
     Ok(())
 }

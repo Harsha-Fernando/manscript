@@ -98,6 +98,13 @@ tmp/
 log/
 *.gem
 
+# PHP
+/vendor/
+
+# .NET
+/bin/
+/obj/
+
 # OS
 .DS_Store
 "#

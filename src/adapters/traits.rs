@@ -58,7 +58,12 @@ pub trait LanguageAdapter: Send + Sync {
     fn id(&self) -> &'static str;
     fn package_manager_name(&self) -> &'static str;
     fn default_environment_manager(&self) -> &'static str;
-    fn create_environment(&self, project: &Project, runtime: &Runtime) -> Result<Environment>;
+    fn create_environment(
+        &self,
+        project: &Project,
+        runtime: &Runtime,
+        confirm: ConfirmPolicy,
+    ) -> Result<Environment>;
     fn environment_ready(&self, project: &Project) -> bool;
     fn install_dependencies(&self, project: &Project) -> Result<()>;
     fn install_packages(&self, project: &Project, packages: &[String]) -> Result<()>;

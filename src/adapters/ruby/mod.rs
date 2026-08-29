@@ -29,7 +29,12 @@ impl LanguageAdapter for RubyAdapter {
         "bundler"
     }
 
-    fn create_environment(&self, project: &Project, runtime: &Runtime) -> Result<Environment> {
+    fn create_environment(
+        &self,
+        project: &Project,
+        runtime: &Runtime,
+        _confirm: crate::adapters::traits::ConfirmPolicy,
+    ) -> Result<Environment> {
         let root = project.environment_dir();
         ensure_dir(&root)?;
         ensure_dir(&env_bin_dir(&root))?;

@@ -11,7 +11,10 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     let lang = registry.language(project.language()).ok();
     let has_framework = project.config.framework.is_some();
 
-    printer.info("This project");
+    printer.command_intro(
+        "Environment",
+        "Show the project configuration and resolved tool paths.",
+    );
     printer.key_value("Name", &project.config.name);
     printer.key_value("Root", &project.root.display().to_string());
     printer.key_value(
@@ -34,21 +37,19 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     }
 
     if has_framework {
-        printer.blank();
-        printer.info("System tools are still on PATH. This app uses the isolated copies.");
-        printer.muted("  Prefer:");
+        printer.section("Recommended commands");
+        printer
+            .muted("  System tools remain unchanged; these commands use the project environment.");
         printer.hint_command("manscript run");
         printer.hint_command("manscript test");
         printer.hint_command("manscript shell");
     } else {
-        printer.blank();
-        printer.muted("  Prefer:");
+        printer.section("Recommended commands");
         printer.hint_command("manscript run");
         printer.hint_command("manscript shell");
     }
 
-    printer.blank();
-    printer.muted("  Project tools:");
+    printer.section("Resolved project tool");
     match project.language() {
         "python" => {
             let py = project.environment_bin_dir().join(python_bin_name());
@@ -61,17 +62,21 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
         "c" => print_env_tool(&printer, &project, "cc"),
         "cpp" => print_env_tool(&printer, &project, "c++"),
         "java" => print_env_tool(&printer, &project, "java"),
+        "go" => print_env_tool(&printer, &project, "go"),
+        "rust" => print_env_tool(&printer, &project, "cargo"),
+        "php" => print_env_tool(&printer, &project, "php"),
+        "csharp" => print_env_tool(&printer, &project, "dotnet"),
         other => {
             printer.hint_command(other);
         }
     }
-    printer.blank();
     if let Some(lang) = lang {
         if lang.environment_ready(&project) {
-            printer.success("The project environment is ready.");
+            printer.command_done("The project environment is ready.", &[]);
         } else {
-            printer.info("Environment is not ready yet.");
-            printer.hint_command("manscript setup");
+            printer.blank();
+            printer.warn("The project environment is not ready yet.");
+            printer.next_steps(&["manscript setup"]);
         }
     }
     Ok(())

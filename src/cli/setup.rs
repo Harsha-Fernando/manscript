@@ -2,13 +2,16 @@ use crate::adapters::traits::ConfirmPolicy;
 use crate::core::errors::Result;
 use crate::core::project::Project;
 use crate::core::registry::AdapterRegistry;
-use crate::utils::output::Printer;
+use crate::utils::output::{display_name, Printer};
 use std::env;
 
 pub fn execute(registry: &AdapterRegistry, yes: bool) -> Result<()> {
     let printer = Printer::new();
-    printer.info("Setup");
     let project = Project::load(&env::current_dir()?)?;
+    printer.command_intro(
+        "Setup",
+        "Prepare the runtime, isolated environment, and dependencies.",
+    );
     prepare(
         &project,
         registry,
@@ -24,52 +27,48 @@ pub fn prepare(
     printer: &Printer,
 ) -> Result<()> {
     let lang = registry.language(project.language())?;
-    printer.info(&format!(
-        "Setting up {} ({})",
-        project.config.name,
-        project.language()
+    printer.key_value("Project", &project.config.name);
+    printer.key_value(
+        "Stack",
+        &format!(
+            "{} {}",
+            display_name(project.language()),
+            project.language_version()
+        ),
+    );
+    printer.blank();
+
+    let mut progress = printer.steps(3);
+    progress.begin("Preparing runtime");
+    let runtime = registry.resolve_runtime(
+        project.language(),
+        project.language_version(),
+        project.config.runtime.provider.as_deref(),
+        confirm,
+    )?;
+    progress.ok(&format!(
+        "{} {} ({})",
+        display_name(project.language()),
+        runtime.version,
+        runtime.source.label()
     ));
-    printer.muted("  ManScript will prepare the runtime, environment, and dependencies.");
-    printer.blank();
 
-    let runtime = {
-        let spin = printer.spinner("Preparing runtime");
-        let runtime = registry.resolve_runtime(
-            project.language(),
-            project.language_version(),
-            project.config.runtime.provider.as_deref(),
-            confirm,
-        )?;
-        spin.finish_ok(&format!(
-            "{} {} ({})",
-            capitalize(project.language()),
-            runtime.version,
-            runtime.source.label()
-        ));
-        runtime
-    };
+    progress.begin("Preparing project environment");
     if !lang.environment_ready(project) {
-        let spin = printer.spinner("Creating environment");
-        lang.create_environment(project, &runtime)?;
-        spin.finish_ok("Environment created");
+        lang.create_environment(project, &runtime, confirm)?;
+        progress.ok("Environment created");
     } else {
-        printer.check_ok("Environment ready", "");
+        progress.ok("Existing environment is ready");
     }
-    {
-        let spin = printer.spinner("Installing dependencies");
-        lang.install_dependencies(project)?;
-        spin.finish_ok("Dependencies installed");
-    }
-    printer.blank();
-    printer.success("Setup complete. The project environment is ready.");
-    printer.next_steps(&["manscript run", "manscript shell"]);
-    Ok(())
-}
 
-fn capitalize(s: &str) -> String {
-    let mut c = s.chars();
-    match c.next() {
-        None => String::new(),
-        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-    }
+    progress.begin("Installing dependencies");
+    lang.install_dependencies(project)?;
+    progress.ok("Dependencies installed");
+    progress.finish();
+
+    printer.command_done(
+        "Setup complete. The project environment is ready.",
+        &["manscript run", "manscript shell"],
+    );
+    Ok(())
 }

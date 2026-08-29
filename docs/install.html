@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Install ManScript</title>
-  <meta name="description" content="Install, update, verify, and configure shell completion for ManScript 0.1.3.">
+  <meta name="description" content="Install, update, verify, and configure shell completion for ManScript 0.1.4.">
   <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
   <main id="main">
     <p class="eyebrow">Getting started</p>
     <h1>Install ManScript</h1>
-    <p class="lede">Version 0.1.3 is distributed as source. Install Rust, then let Cargo compile the <code>manscript</code> binary. Homebrew, Chocolatey, and downloadable binaries are not part of this release.</p>
+    <p class="lede">Version 0.1.4 is distributed as source. Install Rust, then let Cargo compile the <code>manscript</code> binary. Homebrew, Chocolatey, and downloadable binaries are not part of this release.</p>
 
     <h2>1. Install Rust and Cargo</h2>
     <p>Use the official installer at <a href="https://rustup.rs">rustup.rs</a>.</p>
@@ -50,7 +50,7 @@ manscript run</code></pre></article>
     </div>
 
     <h2>Shell completion</h2>
-    <p><code>manscript completions</code> prints a script; it does not edit your shell configuration. Choose one supported shell:</p>
+    <p>Completion code must be loaded by your shell. ManScript does not edit shell configuration. When the command is run directly, it shows the correct activation command instead of filling the terminal with generated code.</p>
     <pre><code># zsh
 eval "$(manscript completions zsh)"
 
@@ -59,7 +59,7 @@ eval "$(manscript completions bash)"
 
 # fish
 manscript completions fish | source</code></pre>
-    <p>PowerShell and Elvish are also supported. To make completion persistent, put the appropriate command in that shell's startup configuration. Tab completion covers subcommands and known <code>create</code> stack identifiers.</p>
+    <p>The generated zsh code initializes zsh's completion system when necessary. PowerShell and Elvish are also supported. To make completion persistent, put the appropriate activation command in that shell's startup configuration. Tab completion covers subcommands and known <code>create</code> stack identifiers.</p>
 
     <h2>Update</h2>
     <p>ManScript has no automatic updater. Open a terminal in the ManScript source folder you cloned during installation, then run:</p>
@@ -69,7 +69,8 @@ manscript --version</code></pre>
     <p>Do not type a placeholder such as <code>/path/to/manscript</code>. The command must run from the real folder containing ManScript's <code>Cargo.toml</code>.</p>
 
     <h2>Language prerequisites</h2>
-    <p>Python and Ruby can use a suitable system runtime or an isolated runtime prepared by ManScript. C and C++ require a working system compiler; Java requires a JDK 17 or newer with both <code>javac</code> and <code>java</code>. ManScript creates project shims for those toolchains but does not download a compiler or JDK.</p>
+    <p>By default, ManScript prefers a suitable system runtime; an explicit runtime provider overrides that order. Python can fall back to uv; Ruby, Go, Rust, PHP, and C# can use a mise-managed fallback after confirmation. Managed runtime files stay below <code>MANSCRIPT_HOME</code> (default <code>~/.manscript</code>). C and C++ still require a working system compiler, and Java requires a JDK 17 or newer with both <code>javac</code> and <code>java</code>.</p>
+    <p>PHP projects also require Composer. ManScript uses an existing Composer executable when available; otherwise, setup can download Composer's official installer after confirmation, verify its published SHA-384 signature, and install Composer only inside the project. Setup then maps language tools into the project environment and runs <code>go mod download</code>, <code>cargo fetch</code>, <code>composer install</code>, or <code>dotnet restore</code> directly when the matching manifest exists.</p>
   </main>
   <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html" aria-current="page">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>
   <a class="to-top" href="#top">Back to top</a><script src="copy.js" defer></script>
