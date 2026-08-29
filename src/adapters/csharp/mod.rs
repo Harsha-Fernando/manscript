@@ -280,8 +280,9 @@ mod tests {
 
     #[test]
     fn dotnet_state_paths_stay_project_local() {
+        let root = PathBuf::from("workspace").join("app");
         let project = Project {
-            root: PathBuf::from("/workspace/app"),
+            root: root.clone(),
             config: crate::adapters::traits::default_project_config(
                 "app",
                 "csharp",
@@ -292,7 +293,8 @@ mod tests {
             ),
         };
         let env = dotnet_env(&project);
-        assert!(env["NUGET_PACKAGES"].starts_with("/workspace/app/.manscript"));
-        assert!(env["DOTNET_CLI_HOME"].starts_with("/workspace/app/.manscript"));
+        let manscript_root = root.join(".manscript");
+        assert!(Path::new(&env["NUGET_PACKAGES"]).starts_with(&manscript_root));
+        assert!(Path::new(&env["DOTNET_CLI_HOME"]).starts_with(&manscript_root));
     }
 }
