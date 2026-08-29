@@ -38,9 +38,7 @@ impl LanguageAdapter for RubyAdapter {
         ensure_dir(&bundle_dir)?;
         write_file(
             &bundle_dir.join("config"),
-            &format!(
-                "---\nBUNDLE_PATH: \".manscript/environment\"\nBUNDLE_BIN: \".manscript/environment/bin\"\nBUNDLE_DISABLE_SHARED_GEMS: \"true\"\n"
-            ),
+            "---\nBUNDLE_PATH: \".manscript/environment\"\nBUNDLE_BIN: \".manscript/environment/bin\"\nBUNDLE_DISABLE_SHARED_GEMS: \"true\"\n",
         )?;
 
         ensure_bundler(project, runtime)?;
@@ -290,7 +288,7 @@ fn resolve_ruby_program(project: &Project, ruby: &Path, name: &str) -> Result<Pa
         return Ok(bin_rails);
     }
     Err(ManscriptError::InvalidCommand(format!(
-        "cannot resolve '{name}' inside the Ruby environment"
+        "could not find `{name}` in the Ruby environment or project bin directory; run `manscript setup` and check the configured command"
     )))
 }
 

@@ -125,7 +125,7 @@ gem "rails", "~> {}"
     fn generate(&self, ctx: &GenerateContext<'_>, kind: &str, name: &str) -> Result<()> {
         if !GENERATORS.iter().any(|g| g.id == kind) {
             return Err(ManscriptError::Message(format!(
-                "Rails can add scaffold, resource, controller, or model — not `{kind}`."
+                "Rails does not support the `{kind}` generator through ManScript.\n\nAvailable generator types:\n  scaffold, resource, controller, model"
             )));
         }
         let rails_bin = ctx.environment.bin_dir.join(exe_name("rails"));
@@ -149,7 +149,7 @@ gem "rails", "~> {}"
         };
         crate::process::Executor::new().run_status(prepared)?;
         ctx.printer.info(&format!(
-            "Rails `{kind}` `{name}` generated via the project env."
+            "Generated Rails {kind} `{name}` with the project environment."
         ));
         Ok(())
     }

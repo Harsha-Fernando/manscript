@@ -1,4 +1,4 @@
-use crate::core::errors::Result;
+use crate::core::errors::{ManscriptError, Result};
 use crate::core::project::Project;
 use crate::core::registry::AdapterRegistry;
 use crate::utils::output::Printer;
@@ -10,16 +10,15 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     let project = Project::load(&env::current_dir()?)?;
     let lang = registry.language(project.language())?;
     if !lang.environment_ready(&project) {
-        printer.info("Environment is not ready yet.");
-        printer.blank();
-        printer.hint_command("manscript setup");
-        return Ok(());
+        return Err(ManscriptError::EnvironmentNotReady(
+            project.environment_dir(),
+        ));
     }
     {
         let spin = printer.spinner("Installing dependencies");
         lang.install_dependencies(&project)?;
         spin.finish_ok("Dependencies installed");
     }
-    printer.success("Packages: acquired. Ego: inflated.");
+    printer.success("Project dependencies are installed.");
     Ok(())
 }

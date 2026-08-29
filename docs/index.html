@@ -3,48 +3,77 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ManScript</title>
-  <meta name="description" content="From an empty folder to a running app, without PATH rituals.">
+  <title>ManScript — Isolated development environments</title>
+  <meta name="description" content="Create, configure, and run Python, Ruby, C, C++, and Java projects in isolated development environments.">
   <link rel="icon" type="image/png" href="static/favicon.png">
   <link rel="apple-touch-icon" href="static/favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <p class="brand">
-      <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
-    </p>
-    <nav>
-      <a href="install.html">Install</a>
-      <a href="create.html">Create</a>
-      <a href="uninstall.html">Uninstall</a>
-      <a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="index.html" aria-current="page">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
     </nav>
   </header>
-  <main>
-    <h1>ManScript</h1>
-    <p>A language-agnostic CLI. It prepares an isolated environment from <code>manscript.toml</code> so you can go from zero to <code>manscript run</code> without activating a venv or fighting PATH.</p>
-    <p>It does not replace Python, Django, Ruby, or Java. Those tools stay on your machine. ManScript runs the copies inside <em>this project’s</em> environment.</p>
-    <p>Run <code>manscript shell</code> inside a project to open a temporary child shell where its managed tools are first on <code>PATH</code>. Type <code>exit</code> to return to your unchanged terminal. ManScript does not edit shell startup files.</p>
-    <p>After install, start a project with <code>manscript create</code>. ManScript asks which language, which framework (or none), and a name. What we support and what happens inside an existing project is on <a href="create.html">Create</a>.</p>
-    <p>Updates are not automatic. Pull the repo and run <code>cargo install --path . --force</code>. Tab completion is on <a href="install.html">Install</a>.</p>
-    <p><a href="install.html">Install</a> · <a href="create.html">Create</a> · <a href="uninstall.html">Remove it later</a></p>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">ManScript 0.1.2</p>
+      <h1 id="hero-title">From project folder to running app</h1>
+      <p class="lede">ManScript prepares an isolated environment from <code>manscript.toml</code>, then runs the right project tools without activation rituals or permanent PATH changes.</p>
+      <p class="actions"><a class="button primary" href="install.html">Install ManScript</a><a class="button" href="commands.html">Browse commands</a></p>
+    </section>
+
+    <section aria-labelledby="quick-start">
+      <h2 id="quick-start">Quick start in three steps</h2>
+      <div class="steps">
+        <article class="card"><span class="step-number" aria-hidden="true">1</span><h3>Create</h3><pre><code>manscript create</code></pre><p>Choose Python, Ruby, C, C++, or Java and an available framework.</p></article>
+        <article class="card"><span class="step-number" aria-hidden="true">2</span><h3>Enter the folder</h3><pre><code>cd myproject</code></pre><p>Use the project name you entered in the wizard.</p></article>
+        <article class="card"><span class="step-number" aria-hidden="true">3</span><h3>Run</h3><pre><code>manscript run</code></pre><p>ManScript uses the project's managed environment and configured command.</p></article>
+      </div>
+    </section>
+
+    <section aria-labelledby="your-path">
+      <h2 id="your-path">Choose your onboarding path</h2>
+      <div class="card-grid">
+        <article class="card"><h3>New project</h3><pre><code>manscript create
+cd myproject
+manscript run</code></pre><p><a href="create.html">Learn what create generates</a>.</p></article>
+        <article class="card"><h3>Existing, not configured</h3><pre><code>cd existing-project
+manscript init
+manscript setup
+manscript run</code></pre><p>Review the new configuration before setup.</p></article>
+        <article class="card"><h3>Cloned ManScript project</h3><pre><code>cd cloned-project
+manscript setup
+manscript run</code></pre><p>Use this path when <code>manscript.toml</code> already exists.</p></article>
+      </div>
+    </section>
+
+    <section aria-labelledby="tasks">
+      <h2 id="tasks">What do you need to do?</h2>
+      <div class="card-grid">
+        <a class="task-card" href="install.html"><strong>Install or update</strong><span>Get Rust, Cargo, ManScript, and completion scripts.</span></a>
+        <a class="task-card" href="create.html"><strong>Create or extend a project</strong><span>Understand stacks, generators, and naming rules.</span></a>
+        <a class="task-card" href="config.html"><strong>Edit configuration</strong><span>See every field and the argv security model.</span></a>
+        <a class="task-card" href="troubleshooting.html"><strong>Fix a problem</strong><span>Diagnose PATH, project, environment, runtime, and toolchain issues.</span></a>
+        <a class="task-card" href="shell.html"><strong>Use project tools directly</strong><span>Open a temporary project-aware child shell.</span></a>
+        <a class="task-card" href="uninstall.html"><strong>Remove ManScript</strong><span>Remove the CLI and, optionally, cached tools and completion setup.</span></a>
+      </div>
+    </section>
+
+    <aside class="callout">
+      <h2>What stays unchanged</h2>
+      <p>Your system Python, Ruby, Java, compilers, parent terminal, and shell startup files remain yours. Project environments live under <code>.manscript/environment</code>; downloaded runtime tools use <code>~/.manscript</code> or <code>MANSCRIPT_HOME</code>.</p>
+    </aside>
   </main>
   <footer class="site-footer">
-    <div class="site-footer-bar">
-      <p class="brand">
-        <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
-      </p>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="install.html">Install</a>
-        <a href="create.html">Create</a>
-        <a href="uninstall.html">Uninstall</a>
-        <a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
-      </nav>
-    </div>
+    <a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
+    <nav class="site-nav" aria-label="Footer">
+      <a href="index.html" aria-current="page">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
+    </nav>
   </footer>
-  <a class="to-top" href="#top">Top</a>
+  <a class="to-top" href="#top">Back to top</a>
   <script src="copy.js" defer></script>
 </body>
 </html>

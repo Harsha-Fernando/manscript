@@ -61,11 +61,9 @@ fn execute_named(
         ));
     }
 
-    if which == "build" {
-        if lang.ensure_artifacts(&project)? {
-            printer.info("Build finished.");
-            return Ok(());
-        }
+    if which == "build" && lang.ensure_artifacts(&project)? {
+        printer.info("Build finished.");
+        return Ok(());
     }
 
     let command = match which {
@@ -77,17 +75,17 @@ fn execute_named(
     let Some(command) = command else {
         if which == "build" || which == "test" {
             printer.info(&format!(
-                "This project has no {which} command. Nothing to do — which is a kind of peace."
+                "This project does not define a `{which}` command. Nothing was run."
             ));
             return Ok(());
         }
         return Err(ManscriptError::Message(format!(
-            "This project has no `{which}` command in manscript.toml yet.\n\nAdd one under [commands], or pick a framework that ships a default."
+            "This project does not define a `{which}` command in `manscript.toml`.\n\nAdd it under `[commands]`, then try again. Example:\n\n    [commands]\n    {which} = \"your-program --arguments\""
         )));
     };
 
     if which == "run" && is_framework_dev_server(registry, &project) {
-        printer.info("Development server running.");
+        printer.info("Starting development server.");
         if let Some(fw) = project.framework_name() {
             if let Some(url) = default_server_url(fw) {
                 printer.url(url);

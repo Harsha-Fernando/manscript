@@ -3,7 +3,9 @@ use clap_complete::Shell;
 
 use crate::core::errors::Result;
 use crate::core::registry::default_registry;
-use crate::utils::output::{clap_styles, print_unknown_command, unrecognized_subcommand};
+use crate::utils::output::{
+    clap_styles, print_clap_error, print_unknown_command, unrecognized_subcommand,
+};
 
 mod build;
 mod completions;
@@ -23,9 +25,9 @@ mod test;
     name = "manscript",
     version,
     styles = clap_styles(),
-    about = "From zero to a running app, with fewer ritual sacrifices to PATH.",
-    after_help = "Tip: `doctor` is a ManScript command, not a shell command.\n  manscript doctor\n  manscript -h",
-    long_about = "ManScript prepares isolated development environments from project requirements.\n\nIt does not disable Python, Django, Ruby, or Rails. Those tools still exist.\nManScript just runs the copies inside this project's environment so you do not\nhave to activate a venv or remember the framework's favorite incantation.\n\n  manscript create django myproject\n  cd myproject\n  manscript run\n  manscript shell"
+    about = "Set up and run isolated development environments with less manual configuration.",
+    after_help = "Need help with your environment?\n  manscript doctor\n  manscript --help",
+    long_about = "ManScript prepares isolated development environments from project requirements.\n\nYour system tools remain unchanged. ManScript runs project-managed tools directly,\nor opens a temporary development shell, so you do not need to activate an\nenvironment manually.\n\n  manscript create django myproject\n  cd myproject\n  manscript run\n  manscript shell"
 )]
 pub struct Cli {
     /// Assume yes for confirmation prompts (CI / non-interactive)
@@ -38,7 +40,7 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// New project, or add an app/module inside the current one
+    /// Create a project, or add an app/module inside the current project
     Create {
         /// django / fastapi / … for a new project, or an app name if you are already in one
         #[arg(value_parser = completions::CreateFirstArgParser)]
@@ -46,9 +48,9 @@ pub enum Commands {
         /// Project directory name
         name: Option<String>,
     },
-    /// Write manscript.toml for an existing directory
+    /// Configure the current directory as a ManScript project
     Init,
-    /// Prepare runtime, environment, and dependencies
+    /// Prepare the runtime, project environment, and dependencies
     Setup,
     /// Install project dependencies into the managed environment
     Install,
@@ -69,11 +71,11 @@ pub enum Commands {
     },
     /// Diagnose the local development environment
     Doctor,
-    /// Show this project's paths and interpreters
+    /// Show the current project's resolved paths and tools
     Env,
     /// Open an interactive shell with the project environment on PATH
     Shell,
-    /// Print a Tab-completion script for your shell
+    /// Print a tab-completion script for your shell
     Completions {
         /// bash, zsh, fish, powershell, or elvish
         #[arg(value_enum)]
@@ -100,9 +102,15 @@ pub fn dispatch() -> Result<()> {
                     print_unknown_command(&name);
                     std::process::exit(2);
                 }
-                err.exit();
+                let exit_code = err.exit_code();
+                print_clap_error(&err);
+                std::process::exit(exit_code);
             }
-            _ => err.exit(),
+            _ => {
+                let exit_code = err.exit_code();
+                print_clap_error(&err);
+                std::process::exit(exit_code);
+            }
         },
     };
     let registry = default_registry();

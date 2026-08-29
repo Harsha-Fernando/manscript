@@ -22,7 +22,9 @@ pub struct Choice<'a> {
 
 pub fn select(title: &str, choices: &[Choice<'_>], start: usize) -> Result<String> {
     if choices.is_empty() {
-        return Err(ManscriptError::Message("nothing to choose from".into()));
+        return Err(ManscriptError::Message(
+            "ManScript could not show this selection because no options are available.".into(),
+        ));
     }
     if !io::stdin().is_terminal() {
         return Err(ManscriptError::Cancelled);
@@ -314,11 +316,11 @@ fn dim_line(s: &str) -> String {
 
 pub fn pretty_language(id: &str) -> String {
     match id {
-        "python" => "Python   — snakes, venvs, and a thousand ways to say hello".into(),
-        "ruby" => "Ruby     — gems, elegance, and occasional magic".into(),
-        "c" => "C        — close to the metal, still just a hello".into(),
-        "cpp" => "C++      — hello, with extra colons".into(),
-        "java" => "Java     — a class named Main, as tradition demands".into(),
+        "python" => "Python   — virtual environments and the Python ecosystem".into(),
+        "ruby" => "Ruby     — Bundler, gems, and Ruby applications".into(),
+        "c" => "C        — native compiled applications".into(),
+        "cpp" => "C++      — native C++ applications".into(),
+        "java" => "Java     — JDK-based applications".into(),
         other => other.to_string(),
     }
 }
@@ -328,27 +330,27 @@ pub fn language_choice(id: &str) -> Choice<'static> {
         "python" => Choice {
             id: "python",
             label: "Python",
-            hint: "snakes, venvs, and a thousand ways to say hello",
+            hint: "virtual environments and the Python ecosystem",
         },
         "ruby" => Choice {
             id: "ruby",
             label: "Ruby",
-            hint: "gems, elegance, and occasional magic",
+            hint: "Bundler, gems, and Ruby applications",
         },
         "c" => Choice {
             id: "c",
             label: "C",
-            hint: "close to the metal, still just a hello",
+            hint: "native compiled applications",
         },
         "cpp" => Choice {
             id: "cpp",
             label: "C++",
-            hint: "hello, with extra colons",
+            hint: "native C++ applications",
         },
         "java" => Choice {
             id: "java",
             label: "Java",
-            hint: "a class named Main, as tradition demands",
+            hint: "JDK-based applications",
         },
         _ => Choice {
             id: "python",
@@ -376,12 +378,12 @@ pub fn language_id_from_choice(choice: &str) -> String {
 
 pub fn pretty_framework(id: &str) -> String {
     match id {
-        "django" => "Django    — batteries included, opinions complimentary".into(),
-        "fastapi" => "FastAPI   — APIs that show up already dressed".into(),
-        "flask" => "Flask     — small, polite, dangerously extensible".into(),
-        "rails" => "Rails     — convention over remembering 40 flags".into(),
-        "sinatra" => "Sinatra   — one file, a dream, a microphone".into(),
-        "none" => "None      — language only (no Django / Rails)".into(),
+        "django" => "Django    — full-stack Python web framework".into(),
+        "fastapi" => "FastAPI   — typed Python APIs with automatic documentation".into(),
+        "flask" => "Flask     — lightweight Python web applications".into(),
+        "rails" => "Rails     — full-stack Ruby web framework".into(),
+        "sinatra" => "Sinatra   — lightweight Ruby web applications".into(),
+        "none" => "None      — language-only project".into(),
         other => other.to_string(),
     }
 }
@@ -391,32 +393,32 @@ pub fn framework_choice(id: &str) -> Choice<'static> {
         "django" => Choice {
             id: "django",
             label: "Django",
-            hint: "batteries included, opinions complimentary",
+            hint: "full-stack Python web framework",
         },
         "fastapi" => Choice {
             id: "fastapi",
             label: "FastAPI",
-            hint: "APIs that show up already dressed",
+            hint: "typed APIs with automatic documentation",
         },
         "flask" => Choice {
             id: "flask",
             label: "Flask",
-            hint: "small, polite, dangerously extensible",
+            hint: "lightweight Python web applications",
         },
         "rails" => Choice {
             id: "rails",
             label: "Rails",
-            hint: "convention over remembering 40 flags",
+            hint: "full-stack Ruby web framework",
         },
         "sinatra" => Choice {
             id: "sinatra",
             label: "Sinatra",
-            hint: "one file, a dream, a microphone",
+            hint: "lightweight Ruby web applications",
         },
         "none" => Choice {
             id: "none",
             label: "None",
-            hint: "language only (no Django / Rails)",
+            hint: "language-only project",
         },
         _ => Choice {
             id: "none",

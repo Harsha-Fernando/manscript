@@ -98,7 +98,7 @@ end
     fn generate(&self, ctx: &GenerateContext<'_>, kind: &str, name: &str) -> Result<()> {
         if kind != "routes" {
             return Err(ManscriptError::Message(format!(
-                "Sinatra can add `routes`, not `{kind}`."
+                "Sinatra does not support the `{kind}` generator.\n\nUse:\n\n    manscript create routes <name>"
             )));
         }
         let file = ctx.project.root.join("routes").join(format!("{name}.rb"));
@@ -119,7 +119,8 @@ end
         let app_rb = ctx.project.root.join("app.rb");
         if !app_rb.is_file() {
             return Err(ManscriptError::Message(
-                "Expected app.rb in this Sinatra project so the routes can be required.".into(),
+                "ManScript created the routes file but could not load it because `app.rb` is missing.\n\nRestore the Sinatra entry file, then add the corresponding `require_relative` line."
+                    .into(),
             ));
         }
         append_unique(&app_rb, &format!("require_relative \"routes/{name}\"\n"))?;

@@ -74,7 +74,7 @@ impl FrameworkAdapter for DjangoFramework {
                     self.default_commands(ctx.project_name),
                 ),
             },
-            &[pin.clone()],
+            std::slice::from_ref(&pin),
         )?;
 
         let prepared = PreparedCommand {
@@ -105,7 +105,7 @@ impl FrameworkAdapter for DjangoFramework {
             "app" => generate_app(ctx, name),
             "model" => generate_model(ctx, name),
             other => Err(ManscriptError::Message(format!(
-                "Django can add `app` or `model`, not `{other}`."
+                "Django does not support the `{other}` generator through ManScript.\n\nAvailable generator types:\n  app, model"
             ))),
         }
     }
@@ -146,7 +146,8 @@ fn generate_app(ctx: &GenerateContext<'_>, name: &str) -> Result<()> {
 
     let settings = find_settings_py(&ctx.project.root).ok_or_else(|| {
         ManscriptError::Message(
-            "Created the app, but could not find settings.py to add it to INSTALLED_APPS.".into(),
+            "Django created the app, but ManScript could not find `settings.py` to update `INSTALLED_APPS`.\n\nAdd the app to `INSTALLED_APPS` manually, or restore the project settings file."
+                .into(),
         )
     })?;
     let text = std::fs::read_to_string(&settings)?;
@@ -167,16 +168,14 @@ def hello(request):
     )?;
     write_file(
         &dest.join("urls.py"),
-        &format!(
-            r#"from django.urls import path
+        r#"from django.urls import path
 
 from . import views
 
 urlpatterns = [
     path("hello/", views.hello),
 ]
-"#
-        ),
+"#,
     )?;
 
     let project_urls = settings
@@ -190,7 +189,7 @@ urlpatterns = [
             .info(&format!("Routed `/{name}/hello/` in the project urls."));
     } else {
         ctx.printer
-            .warn("Could not find the project urls.py to include this app.");
+            .warn("The app was created, but the project `urls.py` file was not found. Add the app routes manually.");
     }
     Ok(())
 }
@@ -202,7 +201,7 @@ fn generate_model(ctx: &GenerateContext<'_>, name: &str) -> Result<()> {
     let app_dir = ctx.project.root.join(&app);
     if !app_dir.join("apps.py").is_file() {
         return Err(ManscriptError::Message(format!(
-            "`{app}` does not look like a Django app (no apps.py)."
+            "`{app}` does not appear to be a Django app because `{app}/apps.py` is missing.\n\nChoose an existing Django app or restore its `apps.py` file."
         )));
     }
 
@@ -347,15 +346,24 @@ pub fn insert_installed_app(settings: &str, app: &str) -> Result<String> {
     }
     let marker = "INSTALLED_APPS";
     let start = settings.find(marker).ok_or_else(|| {
-        ManscriptError::Message("settings.py has no INSTALLED_APPS list to update.".into())
+        ManscriptError::Message(
+            "`settings.py` does not contain an `INSTALLED_APPS` assignment.\n\nAdd the app to `INSTALLED_APPS` manually."
+                .into(),
+        )
     })?;
     let after = &settings[start..];
     let open_rel = after.find('[').ok_or_else(|| {
-        ManscriptError::Message("INSTALLED_APPS is not a list in settings.py.".into())
+        ManscriptError::Message(
+            "`INSTALLED_APPS` in `settings.py` is not written as a list or tuple that ManScript can update.\n\nAdd the app manually."
+                .into(),
+        )
     })?;
     let open = start + open_rel;
     let close = matching_bracket(settings, open).ok_or_else(|| {
-        ManscriptError::Message("Could not find the end of INSTALLED_APPS.".into())
+        ManscriptError::Message(
+            "ManScript could not find the end of `INSTALLED_APPS` in `settings.py`.\n\nCheck the settings syntax and add the app manually."
+                .into(),
+        )
     })?;
     let indent = "    ";
     let insertion = format!("{indent}{quoted_s},\n");
@@ -377,15 +385,28 @@ pub fn insert_url_include(urls: &str, app: &str) -> Result<String> {
     body = ensure_include_import(&body);
     let marker = "urlpatterns";
     let start = body.find(marker).ok_or_else(|| {
-        ManscriptError::Message("Project urls.py has no urlpatterns list to update.".into())
+        ManscriptError::Message(
+            "The project `urls.py` file does not contain a `urlpatterns` assignment.\n\nInclude the app routes manually."
+                .into(),
+        )
     })?;
     let after = &body[start..];
     let open_rel = after
         .find('[')
-        .ok_or_else(|| ManscriptError::Message("urlpatterns is not a list in urls.py.".into()))?;
+        .ok_or_else(|| {
+            ManscriptError::Message(
+                "`urlpatterns` in `urls.py` is not a list that ManScript can update.\n\nInclude the app routes manually."
+                    .into(),
+            )
+        })?;
     let open = start + open_rel;
     let close = matching_bracket(&body, open)
-        .ok_or_else(|| ManscriptError::Message("Could not find the end of urlpatterns.".into()))?;
+        .ok_or_else(|| {
+            ManscriptError::Message(
+                "ManScript could not find the end of `urlpatterns` in `urls.py`.\n\nCheck the URL configuration syntax and include the app routes manually."
+                    .into(),
+            )
+        })?;
     let insertion = format!("    path('{app}/', include('{app}.urls')),\n");
     Ok(format!("{}{}{}", &body[..close], insertion, &body[close..]))
 }

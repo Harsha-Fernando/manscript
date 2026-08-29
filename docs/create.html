@@ -1,165 +1,81 @@
 <!DOCTYPE html>
 <html lang="en" id="top">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Create — ManScript</title>
-  <link rel="icon" type="image/png" href="static/favicon.png">
-  <link rel="apple-touch-icon" href="static/favicon.png">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create projects with ManScript</title>
+  <meta name="description" content="Create new ManScript projects and generate framework apps, routes, models, controllers, and resources.">
+  <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <p class="brand">
-      <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
-    </p>
-    <nav>
-      <a href="install.html">Install</a>
-      <a href="create.html">Create</a>
-      <a href="uninstall.html">Uninstall</a>
-      <a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
-    </nav>
-  </header>
-  <main>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Primary"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html" aria-current="page">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></header>
+  <main id="main">
+    <p class="eyebrow">Projects and generators</p>
     <h1>Create</h1>
-    <p><code>manscript create</code> does two different jobs. Outside a project it starts a new folder. Inside a project (a directory that has <code>manscript.toml</code>, or a child of one) it adds an app or module. It will not nest another <code>startproject</code> inside an existing one.</p>
+    <p class="lede"><code>manscript create</code> starts a project when no <code>manscript.toml</code> is found. Inside a ManScript project, it adds something supported by that framework instead of nesting another project.</p>
 
-    <h2>New project</h2>
-    <p>From an empty folder that is not already a ManScript project:</p>
+    <h2>Start a new project</h2>
     <pre><code>manscript create</code></pre>
     <ol>
-      <li>Language: Python, Ruby, C, C++, or Java.</li>
-      <li>Framework, if that language has any. Python offers Django, FastAPI, Flask, and <strong>None</strong> (language only). Ruby offers Rails, Sinatra, and <strong>None</strong>. C, C++, and Java skip this step.</li>
-      <li>A folder name (letters, numbers, hyphens, underscores).</li>
+      <li>Choose Python, Ruby, C, C++, or Java.</li>
+      <li>For Python or Ruby, choose a framework or <strong>None</strong>. C, C++, and Java skip this prompt because each has one project kind.</li>
+      <li>Enter the new folder name.</li>
     </ol>
-    <p>ManScript then writes the folder, an isolated environment under <code>.manscript/environment</code>, starter files, and <code>manscript.toml</code>. Next:</p>
+    <p>Project folder names may contain ASCII letters, numbers, hyphens, and underscores, but not spaces or paths. ManScript asks before continuing into an existing non-empty directory.</p>
     <pre><code>cd the-name-you-chose
 manscript run</code></pre>
-    <p><code>-y</code> answers yes to confirmation prompts. It does not run the full wizard by itself. Without a language and name, interactive create still needs a terminal.</p>
-    <p>Optional shortcuts (scripts / CI), not the usual path:</p>
+
+    <p>Scripts and CI may provide the stack and name directly:</p>
     <pre><code>manscript create django myproject
-manscript create python myapp
-manscript create c hello</code></pre>
-    <p>If Tab completion is loaded (see <a href="install.html">Install</a>), Tab after <code>manscript create</code> suggests those stack ids. Inside a project you can still type any app or module name.</p>
+manscript create python utility
+manscript create c hello
+manscript create java sample</code></pre>
+    <p>The global <code>--yes</code> or <code>-y</code> flag accepts confirmation prompts. It does not provide missing wizard answers in a non-interactive terminal.</p>
 
-    <h2>What we support</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Language</th>
-          <th>Frameworks</th>
-          <th>Language only</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Python</td>
-          <td>Django, FastAPI, Flask</td>
-          <td>picker <strong>None</strong>, or id <code>python</code></td>
-        </tr>
-        <tr>
-          <td>Ruby</td>
-          <td>Rails, Sinatra</td>
-          <td>picker <strong>None</strong>, or id <code>ruby</code></td>
-        </tr>
-        <tr>
-          <td>C</td>
-          <td>—</td>
-          <td><code>c</code></td>
-        </tr>
-        <tr>
-          <td>C++</td>
-          <td>—</td>
-          <td><code>cpp</code></td>
-        </tr>
-        <tr>
-          <td>Java</td>
-          <td>—</td>
-          <td><code>java</code></td>
-        </tr>
-      </tbody>
-    </table>
-    <p>macOS, Linux, and Windows via rustup and Cargo. On Windows, C and C++ need a real compiler (LLVM or MinGW). Git’s <code>cc.exe</code> stub is not enough. Java needs JDK 17 or newer.</p>
-
-    <h2>What a new project gets</h2>
-    <ul>
-      <li><strong>Django</strong> — <code>django startproject</code> in the project env, pinned Django, default run is <code>python manage.py runserver</code>.</li>
-      <li><strong>FastAPI</strong> — app plus uvicorn; default run is uvicorn on port 8000.</li>
-      <li><strong>Flask</strong> — app; default run is Flask on port 5000.</li>
-      <li><strong>Rails</strong> — <code>rails new</code> via the project gems; default run is <code>bin/rails server</code>.</li>
-      <li><strong>Sinatra</strong> — <code>app.rb</code> and Gemfile; default run is <code>ruby app.rb</code>.</li>
-      <li><strong>Python only</strong> — <code>main.py</code> and empty <code>requirements.txt</code>; run is <code>python main.py</code>.</li>
-      <li><strong>Ruby only</strong> — <code>app.rb</code> and a bare Gemfile; run is <code>ruby app.rb</code>.</li>
-      <li><strong>C</strong> — <code>main.c</code>; <code>run</code> compiles with the project <code>cc</code> shim then executes <code>app</code>.</li>
-      <li><strong>C++</strong> — <code>main.cpp</code>; same with <code>c++</code>.</li>
-      <li><strong>Java</strong> — <code>Main.java</code>; <code>run</code> runs <code>javac</code> then <code>java -cp . Main</code>.</li>
-    </ul>
-
-    <h2>Inside a project</h2>
-    <p>Stay in the project folder (anywhere that still finds <code>manscript.toml</code>).</p>
-    <pre><code>manscript create</code></pre>
-    <table>
-      <thead>
-        <tr>
-          <th>This project is</th>
-          <th>What create adds</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Django</td>
-          <td>Asks App vs Model, then a name. <code>manscript create blog</code> is an <strong>app</strong> (startapp, INSTALLED_APPS, urls, hello view at <code>/blog/hello/</code>). <code>manscript create model Post</code> appends a model, registers it in admin, then <code>makemigrations</code> and <code>migrate</code>.</td>
-        </tr>
-        <tr>
-          <td>Rails</td>
-          <td>Asks kind: scaffold, resource, controller, or model, then a name. One argument is the name; it still asks which kind. Example: <code>manscript create scaffold Post</code>.</td>
-        </tr>
-        <tr>
-          <td>Flask</td>
-          <td>A blueprint.</td>
-        </tr>
-        <tr>
-          <td>FastAPI</td>
-          <td>A router.</td>
-        </tr>
-        <tr>
-          <td>Sinatra</td>
-          <td>Another routes file, required from <code>app.rb</code>.</td>
-        </tr>
-        <tr>
-          <td>python, ruby, c, cpp, java</td>
-          <td>Nothing to generate. Language-only trees are just files.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>Other commands</h2>
-    <ul>
-      <li><code>manscript doctor</code> — machine checks; does not change files.</li>
-      <li><code>manscript setup</code> — runtime, environment, dependencies.</li>
-      <li><code>manscript install</code> — dependencies into the project env.</li>
-      <li><code>manscript run</code> / <code>test</code> / <code>build</code> — from <code>[commands]</code> in <code>manscript.toml</code>. Language-only <code>run</code> is not treated as a web server. C/C++/Java compile before run when needed.</li>
-      <li><code>manscript env</code> — paths for this project.</li>
-      <li><code>manscript shell</code> — opens a child shell with this project’s managed tools first on <code>PATH</code>. Type <code>exit</code> to return to the unchanged parent shell. It never edits shell startup files.</li>
-      <li><code>manscript completions</code> — prints a Tab-completion script for your shell; setup instructions are on the <a href="install.html">Install</a> page.</li>
-      <li><code>manscript init</code> — write <code>manscript.toml</code> in an existing directory.</li>
-    </ul>
-  </main>
-  <footer class="site-footer">
-    <div class="site-footer-bar">
-      <p class="brand">
-        <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
-      </p>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="install.html">Install</a>
-        <a href="create.html">Create</a>
-        <a href="uninstall.html">Uninstall</a>
-        <a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
-      </nav>
+    <h2>Supported project kinds</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Language</th><th scope="col">Framework choices</th><th scope="col">Language only</th><th scope="col">Default version</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Python</th><td>Django 5.2, FastAPI 0.115, Flask 3.1</td><td><code>python</code></td><td>Python 3.13</td></tr>
+          <tr><th scope="row">Ruby</th><td>Rails 8.0, Sinatra 4.1</td><td><code>ruby</code></td><td>Ruby 3.4</td></tr>
+          <tr><th scope="row">C</th><td>None</td><td><code>c</code></td><td>System compiler</td></tr>
+          <tr><th scope="row">C++</th><td>None</td><td><code>cpp</code></td><td>System compiler</td></tr>
+          <tr><th scope="row">Java</th><td>None</td><td><code>java</code></td><td>JDK 17+</td></tr>
+        </tbody>
+      </table>
     </div>
-  </footer>
-  <a class="to-top" href="#top">Top</a>
-  <script src="copy.js" defer></script>
+
+    <h2>What gets generated</h2>
+    <ul>
+      <li><strong>Django:</strong> a Django project, pinned requirement, and commands for the development server and tests.</li>
+      <li><strong>FastAPI:</strong> an application with Uvicorn and pytest commands.</li>
+      <li><strong>Flask:</strong> an application with Flask development server and pytest commands.</li>
+      <li><strong>Rails:</strong> a Rails project using SQLite, with run, test, and <code>bin/rails assets:precompile</code> build commands.</li>
+      <li><strong>Sinatra:</strong> <code>app.rb</code>, a Gemfile, and a Ruby run command.</li>
+      <li><strong>Language only:</strong> starter source files and suitable run/build commands for Python, Ruby, C, C++, or Java.</li>
+    </ul>
+    <p>All variants include <code>manscript.toml</code>, a project environment under <code>.manscript/environment</code>, and ManScript entries in <code>.gitignore</code>.</p>
+
+    <h2>Generate inside a project</h2>
+    <p>Run from the project root or a child directory. Python app and module names for Django, Flask, and FastAPI cannot contain hyphens; use letters, numbers, and underscores. Django model names must start with a letter and use letters, numbers, or underscores.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Project</th><th scope="col">Generators</th><th scope="col">Examples and behavior</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Django</th><td><code>app</code>, <code>model</code></td><td><code>manscript create blog</code> defaults to an app. <code>manscript create model Post</code> adds a model and runs migrations.</td></tr>
+          <tr><th scope="row">Rails</th><td><code>scaffold</code>, <code>resource</code>, <code>controller</code>, <code>model</code></td><td>Choose a kind, or pass both: <code>manscript create scaffold Post</code>.</td></tr>
+          <tr><th scope="row">Flask</th><td><code>blueprint</code></td><td><code>manscript create accounts</code> adds and registers a blueprint.</td></tr>
+          <tr><th scope="row">FastAPI</th><td><code>router</code></td><td><code>manscript create users</code> adds and includes a router.</td></tr>
+          <tr><th scope="row">Sinatra</th><td><code>routes</code></td><td><code>manscript create admin</code> adds a routes file required by <code>app.rb</code>.</td></tr>
+          <tr><th scope="row">Language only</th><td>None</td><td>Add source files directly.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="callout"><h3>Single-kind generators are shorter</h3><p>Flask, FastAPI, and Sinatra have one generator kind, so ManScript skips the kind prompt and asks only for a name. Django defaults a single name to <code>app</code>; Rails still needs a kind because it offers four.</p></aside>
+    <p>Django and Rails generators require a prepared project environment. Run <code>manscript setup</code> if it is missing.</p>
+  </main>
+  <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html" aria-current="page">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>
+  <a class="to-top" href="#top">Back to top</a><script src="copy.js" defer></script>
 </body>
 </html>

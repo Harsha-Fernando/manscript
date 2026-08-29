@@ -67,10 +67,16 @@ fn print_root_help() {
     print_rows(&printer, "Available commands:", &command_refs);
 
     printer.blank();
-    printer.info("Example");
+    printer.info("Common workflows");
+    printer.muted("  Create and run a new project:");
     printer.hint_command("manscript create django myproject");
+    printer.hint_command("cd myproject && manscript run");
+    printer.blank();
+    printer.muted("  Prepare an existing ManScript project:");
+    printer.hint_command("manscript setup");
+    printer.blank();
+    printer.muted("  Add something inside the current framework project:");
     printer.hint_command("manscript create blog");
-    printer.muted("  (inside a project, create adds an app/module — not another startproject)");
     printer.blank();
 }
 

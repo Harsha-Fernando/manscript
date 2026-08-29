@@ -101,7 +101,7 @@ pub trait FrameworkAdapter: Send + Sync {
 
     fn generate(&self, _ctx: &GenerateContext<'_>, kind: &str, _name: &str) -> Result<()> {
         Err(crate::core::errors::ManscriptError::Message(format!(
-            "`{kind}` is not something this framework can add from ManScript."
+            "This framework does not support the `{kind}` generator.\n\nRun `manscript create` without arguments to see the available generator types."
         )))
     }
 }

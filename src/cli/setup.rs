@@ -29,7 +29,7 @@ pub fn prepare(
         project.config.name,
         project.language()
     ));
-    printer.muted("  fetching a sensible universe for this folder…");
+    printer.muted("  ManScript will prepare the runtime, environment, and dependencies.");
     printer.blank();
 
     let runtime = {
@@ -61,7 +61,8 @@ pub fn prepare(
         spin.finish_ok("Dependencies installed");
     }
     printer.blank();
-    printer.success("Setup complete. The machine is, briefly, on your side.");
+    printer.success("Setup complete. The project environment is ready.");
+    printer.next_steps(&["manscript run", "manscript shell"]);
     Ok(())
 }
 

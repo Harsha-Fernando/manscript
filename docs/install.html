@@ -3,86 +3,75 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Install — ManScript</title>
-  <link rel="icon" type="image/png" href="static/favicon.png">
-  <link rel="apple-touch-icon" href="static/favicon.png">
-  <link rel="stylesheet" href="style.css">
+  <title>Install ManScript</title>
+  <meta name="description" content="Install, update, verify, and configure shell completion for ManScript 0.1.2.">
+  <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <p class="brand">
-      <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
-    </p>
-    <nav>
-      <a href="install.html">Install</a>
-      <a href="create.html">Create</a>
-      <a href="uninstall.html">Uninstall</a>
-      <a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
-    </nav>
-  </header>
-  <main>
-    <h1>Install</h1>
-    <p>0.1.2 ships as source. You install <strong>Rust</strong>, then compile ManScript with Cargo. You do not need Homebrew or Chocolatey.</p>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Primary"><a href="index.html">Home</a><a href="install.html" aria-current="page">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></header>
+  <main id="main">
+    <p class="eyebrow">Getting started</p>
+    <h1>Install ManScript</h1>
+    <p class="lede">Version 0.1.2 is distributed as source. Install Rust, then let Cargo compile the <code>manscript</code> binary. Homebrew, Chocolatey, and downloadable binaries are not part of this release.</p>
 
-    <h2>1. Rust</h2>
-    <p>Use <a href="https://rustup.rs">rustup</a>. That is the usual way to get <code>rustc</code> and <code>cargo</code>.</p>
+    <h2>1. Install Rust and Cargo</h2>
+    <p>Use the official installer at <a href="https://rustup.rs">rustup.rs</a>.</p>
     <h3>macOS and Linux</h3>
     <pre><code>curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source "$HOME/.cargo/env"</code></pre>
-    <p>On macOS, if compile fails, install Xcode Command Line Tools: <code>xcode-select --install</code>.</p>
-    <p>On Debian/Ubuntu, you may need: <code>sudo apt install build-essential</code>.</p>
+source "$HOME/.cargo/env"
+cargo --version</code></pre>
+    <p>macOS may also need Xcode Command Line Tools: <code>xcode-select --install</code>. Debian or Ubuntu may need <code>sudo apt install build-essential</code> to compile Rust dependencies.</p>
     <h3>Windows</h3>
-    <p>Download and run the installer from <a href="https://rustup.rs">rustup.rs</a> (64-bit). The MSVC toolchain is the default and is fine. After it finishes, open a <strong>new</strong> terminal so <code>cargo</code> is on PATH.</p>
-    <p>Check:</p>
+    <p>Run the 64-bit rustup installer and accept the default MSVC toolchain. Open a new PowerShell or terminal after installation, then run:</p>
     <pre><code>cargo --version</code></pre>
 
-    <h2>2. ManScript</h2>
-    <p>Clone the repo (you need access if it is private), then install from the project folder:</p>
+    <h2>2. Install ManScript</h2>
     <pre><code>git clone https://github.com/Harsha-Fernando/manscript.git
 cd manscript
-cargo install --path .</code></pre>
-    <p>That puts <code>manscript</code> in <code>~/.cargo/bin</code> (Windows: <code>%USERPROFILE%\.cargo\bin</code>). If the shell says command not found, add that directory to PATH and open a new terminal.</p>
-    <pre><code>manscript doctor
-manscript create</code></pre>
-    <p>With no extra arguments, ManScript asks: language, then framework (or None), then a folder name. C, C++, and Java skip the framework question. When it finishes:</p>
-    <pre><code>cd myproject
-manscript run</code></pre>
-    <p>For ad-hoc project commands, run <code>manscript shell</code>. It opens a child shell with project tools first on <code>PATH</code>; type <code>exit</code> to return to the unchanged parent terminal.</p>
-    <p>Use the name you typed at the prompt, not necessarily <code>myproject</code>.</p>
-    <p>Scripts and CI can skip the prompts with extra arguments, for example <code>manscript create django myproject</code>. That is optional. The usual way is still <code>manscript create</code>. Full detail: <a href="create.html">Create</a>.</p>
+cargo install --path .
+manscript --version
+manscript doctor</code></pre>
+    <p>Cargo normally writes the executable to <code>~/.cargo/bin</code>, or <code>%USERPROFILE%\.cargo\bin</code> on Windows.</p>
+    <aside class="callout warning"><h3>If the command is not found</h3><p>Open a new terminal first. If that does not help, add Cargo's bin directory to your user <code>PATH</code>. See <a href="troubleshooting.html#path">PATH troubleshooting</a>.</p></aside>
 
-    <h2>Tab completion</h2>
-    <p>Once <code>manscript</code> is on PATH, the shell can complete the binary name. To also complete commands after it, load the script for your shell (zsh is shown; also <code>bash</code>, <code>fish</code>, <code>powershell</code>, <code>elvish</code>):</p>
-    <pre><code>eval "$(manscript completions zsh)"</code></pre>
-    <p>Put that line in <code>~/.zshrc</code> (or the equivalent for your shell) so it survives new terminals. Then Tab after <code>manscript</code> lists commands such as <code>run</code> and <code>shell</code>, and Tab after <code>manscript create</code> suggests stacks such as <code>django</code> or <code>python</code>.</p>
+    <h2>3. Pick your next command</h2>
+    <div class="card-grid">
+      <article class="card"><h3>New project</h3><pre><code>manscript create
+cd myproject
+manscript run</code></pre></article>
+      <article class="card"><h3>Existing project</h3><pre><code>cd existing-project
+manscript init
+manscript setup
+manscript run</code></pre></article>
+      <article class="card"><h3>Cloned configured project</h3><pre><code>cd cloned-project
+manscript setup
+manscript run</code></pre></article>
+    </div>
+
+    <h2>Shell completion</h2>
+    <p><code>manscript completions</code> prints a script; it does not edit your shell configuration. Choose one supported shell:</p>
+    <pre><code># zsh
+eval "$(manscript completions zsh)"
+
+# bash
+eval "$(manscript completions bash)"
+
+# fish
+manscript completions fish | source</code></pre>
+    <p>PowerShell and Elvish are also supported. To make completion persistent, put the appropriate command in that shell's startup configuration. Tab completion covers subcommands and known <code>create</code> stack identifiers.</p>
 
     <h2>Update</h2>
-    <p>ManScript does <strong>not</strong> update itself. There is no background updater. When a new version is published, you install it again the same way you installed it the first time.</p>
-    <pre><code>cd manscript
+    <p>ManScript has no automatic updater. Pull the source and ask Cargo to replace the installed binary:</p>
+    <pre><code>cd /path/to/manscript
 git pull
-cargo install --path . --force</code></pre>
-    <p><code>--force</code> is required: Cargo will not replace a binary that is already named <code>manscript</code>, even if the source changed. <code>manscript --version</code> should read 0.1.2 after this release. After a source-only change at the same version number, that is still the command.</p>
-    <p>If you later install from crates.io, it would be <code>cargo install manscript --force</code> (and a version pin if you want one). That is not the 0.1 path yet.</p>
+cargo install --path . --force
+manscript --version</code></pre>
 
-    <h2>What this does not install</h2>
-    <p>Rustup does not install Django. A Django project still needs a Python that ManScript can detect (or download via its provider). Java projects need a JDK 17+. C/C++ need <code>cc</code> / <code>c++</code> that can actually compile, not a stub.</p>
-    <p><a href="uninstall.html">Uninstall</a></p>
+    <h2>Language prerequisites</h2>
+    <p>Python and Ruby can use a suitable system runtime or an isolated runtime prepared by ManScript. C and C++ require a working system compiler; Java requires a JDK 17 or newer with both <code>javac</code> and <code>java</code>. ManScript creates project shims for those toolchains but does not download a compiler or JDK.</p>
   </main>
-  <footer class="site-footer">
-    <div class="site-footer-bar">
-      <p class="brand">
-        <a href="index.html"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a>
-      </p>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="install.html">Install</a>
-        <a href="create.html">Create</a>
-        <a href="uninstall.html">Uninstall</a>
-        <a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a>
-      </nav>
-    </div>
-  </footer>
-  <a class="to-top" href="#top">Top</a>
-  <script src="copy.js" defer></script>
+  <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html" aria-current="page">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>
+  <a class="to-top" href="#top">Back to top</a><script src="copy.js" defer></script>
 </body>
 </html>

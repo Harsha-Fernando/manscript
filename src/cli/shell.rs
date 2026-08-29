@@ -9,6 +9,7 @@ use crate::process::{Executor, PreparedCommand};
 use crate::utils::output::Printer;
 
 pub fn execute(registry: &AdapterRegistry) -> Result<()> {
+    let printer = Printer::new();
     let project = Project::load(&env::current_dir()?)?;
     let language = registry.language(project.language())?;
 
@@ -19,15 +20,22 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     }
 
     let shell_environment = language.shell_environment(&project)?;
-    print_banner(&project);
+    print_banner(&printer, &project);
+    printer.flush();
     let code = Executor::new().run_inherit(prepare_shell_launch(
         &project,
         shell_environment,
         resolve_shell_program(),
     ))?;
     if code != 0 {
+        printer.warn(&format!(
+            "Development shell closed with exit code {code}. Your original terminal environment is unchanged."
+        ));
         std::process::exit(code);
     }
+    printer.success(
+        "Development shell closed. Your original terminal environment is unchanged. Goodbye.",
+    );
     Ok(())
 }
 
@@ -56,10 +64,12 @@ fn prepare_shell_launch(
     mut shell_environment: ShellEnvironment,
     program: PathBuf,
 ) -> PreparedCommand {
-    shell_environment.extra_env.insert(
-        "PS1".into(),
-        format!("{} $ ", shell_prompt_name(&project.config.name)),
-    );
+    if !cfg!(windows) {
+        shell_environment.extra_env.insert(
+            "PS1".into(),
+            format!("{} $ ", shell_prompt_name(&project.config.name)),
+        );
+    }
 
     PreparedCommand {
         program,
@@ -70,29 +80,21 @@ fn prepare_shell_launch(
     }
 }
 
-fn print_banner(project: &Project) {
-    let printer = Printer::new();
+fn print_banner(printer: &Printer, project: &Project) {
     let project_name = terminal_text(&project.config.name);
     let language = terminal_text(project.language());
     let language_version = terminal_text(project.language_version());
     printer.info("ManScript development shell");
-    printer.line(&format!("  Project     {project_name}"));
-    printer.line(&format!(
-        "  {}{}{}",
-        display_name(&language),
-        spacing_after(&language),
-        language_version
-    ));
+    printer.key_value("Project", &project_name);
+    printer.key_value(&display_name(&language), &language_version);
     if let Some(framework) = &project.config.framework {
         let framework_name = terminal_text(&framework.name);
-        printer.line(&format!(
-            "  {}{}{}",
-            display_name(&framework_name),
-            spacing_after(&framework_name),
-            terminal_text(&framework.version)
-        ));
+        printer.key_value(
+            &display_name(&framework_name),
+            &terminal_text(&framework.version),
+        );
     }
-    printer.line("  Environment .manscript/environment");
+    printer.key_value("Environment", ".manscript/environment");
     printer.blank();
     printer.muted("  Type `exit` to return to your normal shell.");
     printer.blank();
@@ -104,10 +106,6 @@ fn display_name(name: &str) -> String {
         Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
         None => String::new(),
     }
-}
-
-fn spacing_after(name: &str) -> String {
-    " ".repeat(12usize.saturating_sub(name.len()))
 }
 
 fn shell_prompt_name(name: &str) -> String {
@@ -172,7 +170,11 @@ mod tests {
         assert!(prepared.args.is_empty());
         assert_eq!(prepared.path_prepend, vec![project_bin]);
         assert_eq!(prepared.extra_env.get("EXISTING").unwrap(), "preserved");
-        assert_eq!(prepared.extra_env.get("PS1").unwrap(), "Example $ ");
+        if cfg!(windows) {
+            assert!(!prepared.extra_env.contains_key("PS1"));
+        } else {
+            assert_eq!(prepared.extra_env.get("PS1").unwrap(), "Example $ ");
+        }
     }
 
     #[test]

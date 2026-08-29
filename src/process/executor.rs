@@ -65,7 +65,7 @@ impl Executor {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stdout = String::from_utf8_lossy(&output.stdout);
             Err(ManscriptError::Message(format!(
-                "A tool ManScript started did not finish successfully (exit {}).\n\n{stdout}{stderr}\nIf this happened during setup, try:\n\n    manscript doctor\n    manscript setup",
+                "A required tool exited with status {}.\n\nTool output:\n{stdout}{stderr}\nCheck the output above. For environment or setup failures, run:\n\n    manscript doctor\n    manscript setup",
                 output.status.code().unwrap_or(1)
             )))
         }
@@ -84,7 +84,9 @@ pub(crate) fn prepend_path(path_prepend: &[PathBuf], existing: Option<&OsStr>) -
         paths.extend(std::env::split_paths(existing));
     }
     std::env::join_paths(paths).map_err(|err| {
-        ManscriptError::Message(format!("Could not construct the project PATH.\n\n{err}"))
+        ManscriptError::Message(format!(
+            "ManScript could not construct `PATH` for the child process.\n\nSystem detail:\n  {err}\n\nCheck the configured project paths and try again."
+        ))
     })
 }
 
@@ -195,7 +197,11 @@ mod tests {
     fn prepends_project_paths_before_existing_path() {
         let project_bin = PathBuf::from("project-bin");
         let existing = std::env::join_paths(["system-bin", "other-bin"]).unwrap();
-        let path = prepend_path(&[project_bin.clone()], Some(OsStr::new(&existing))).unwrap();
+        let path = prepend_path(
+            std::slice::from_ref(&project_bin),
+            Some(OsStr::new(&existing)),
+        )
+        .unwrap();
         let parts: Vec<PathBuf> = std::env::split_paths(&path).collect();
 
         assert_eq!(

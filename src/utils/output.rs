@@ -184,6 +184,31 @@ impl Printer {
         }
     }
 
+    pub fn key_value(&self, label: &str, value: &str) {
+        if self.quiet {
+            return;
+        }
+        if stdout_color() {
+            println!("  {:<12} {}", label.bold(), value);
+        } else {
+            println!("  {label:<12} {value}");
+        }
+    }
+
+    pub fn next_steps(&self, commands: &[&str]) {
+        if commands.is_empty() || self.quiet {
+            return;
+        }
+        self.section(if commands.len() == 1 {
+            "Next step:"
+        } else {
+            "Next steps:"
+        });
+        for command in commands {
+            self.hint_command(command);
+        }
+    }
+
     pub fn url(&self, url: &str) {
         if stdout_color() {
             println!("{}", url.cyan().underline());
@@ -341,6 +366,14 @@ impl StepBar<'_> {
         }
     }
 
+    pub fn note(&self, detail: &str) {
+        if let Some(bar) = &self.bar {
+            bar.println(format!("      → {detail}"));
+        } else {
+            self.printer.muted(&format!("      → {detail}"));
+        }
+    }
+
     pub fn finish(mut self) {
         self.done = true;
         if self.held_depth {
@@ -442,18 +475,20 @@ pub fn print_error_block(body: &str, cancelled: bool) {
     eprintln_tag(
         " ERROR ",
         TagKind::Err,
-        "ManScript hit a snag. (The good news: it is explainable.)",
+        "ManScript could not complete that request.",
         false,
     );
     eprintln!();
     for line in body.lines() {
-        if stderr_color() {
-            eprintln!("  {}", line);
-        } else {
-            eprintln!("  {line}");
-        }
+        eprintln!("  {line}");
     }
     eprintln!();
+}
+
+pub fn print_clap_error(err: &clap::Error) {
+    let plain = strip_ansi(&err.to_string());
+    let body = plain.strip_prefix("error: ").unwrap_or(&plain).trim_end();
+    print_error_block(body, false);
 }
 
 pub fn print_unknown_command(name: &str) {
@@ -461,18 +496,9 @@ pub fn print_unknown_command(name: &str) {
     eprintln_tag(
         " ERROR ",
         TagKind::Err,
-        &format!("There is no command like `{name}`."),
+        &format!("`{name}` is not a ManScript command."),
         false,
     );
-    eprintln!();
-    if stderr_color() {
-        eprintln!(
-            "{}",
-            "  Not in the band. Not even on the guest list.".dimmed()
-        );
-    } else {
-        eprintln!("  Not in the band. Not even on the guest list.");
-    }
     eprintln!();
     if let Some(hint) = suggest_command(name) {
         eprintln!("  Did you mean:");
@@ -483,11 +509,11 @@ pub fn print_unknown_command(name: &str) {
         }
         eprintln!();
     }
-    eprintln!("  Peek at the menu with:");
+    eprintln!("  See all available commands:");
     if stderr_color() {
-        eprintln!("    {}", "manscript -h".cyan().bold());
+        eprintln!("    {}", "manscript --help".cyan().bold());
     } else {
-        eprintln!("    manscript -h");
+        eprintln!("    manscript --help");
     }
     eprintln!();
 }

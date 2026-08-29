@@ -23,12 +23,20 @@ fn download_to_file_inner(url: &str, dest: &Path) -> Result<()> {
     let response = ureq::get(url)
         .set("User-Agent", "manscript/0.1")
         .call()
-        .map_err(|e| ManscriptError::Message(format!("download failed ({url}): {e}")))?;
+        .map_err(|e| {
+            ManscriptError::Message(format!(
+                "ManScript could not download a required tool.\n\nURL:\n  {url}\n\nNetwork detail:\n  {e}\n\nCheck your connection and try `manscript setup` again."
+            ))
+        })?;
     let mut reader = response.into_reader();
     let mut bytes = Vec::new();
     reader
         .read_to_end(&mut bytes)
-        .map_err(|e| ManscriptError::Message(format!("download read failed: {e}")))?;
+        .map_err(|e| {
+            ManscriptError::Message(format!(
+                "ManScript downloaded a response but could not read it.\n\nSystem detail:\n  {e}\n\nTry `manscript setup` again."
+            ))
+        })?;
     fs::write(dest, bytes)?;
     Ok(())
 }
@@ -40,7 +48,11 @@ pub fn extract_tar_gz(archive: &Path, dest: &Path) -> Result<()> {
     let mut archive = tar::Archive::new(decoder);
     archive
         .unpack(dest)
-        .map_err(|e| ManscriptError::Message(format!("failed to extract archive: {e}")))?;
+        .map_err(|e| {
+            ManscriptError::Message(format!(
+                "ManScript could not extract the downloaded tool archive.\n\nSystem detail:\n  {e}\n\nRemove the incomplete download from the ManScript cache and run `manscript setup` again."
+            ))
+        })?;
     Ok(())
 }
 

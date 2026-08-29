@@ -31,7 +31,8 @@ pub fn execute(
 
     if framework.is_none() {
         printer.blank();
-        printer.muted("  First a language, then a framework. Then ManScript does the chores.");
+        printer
+            .muted("  Choose a language and framework, then ManScript will prepare the project.");
         printer.blank();
     }
 
@@ -45,7 +46,7 @@ pub fn execute(
 
     if dest.exists() && !dir_is_empty_or_missing(&dest) {
         let ok = confirm.confirm(&format!(
-            "Directory '{project_name}' already exists and is not empty. Overwrite/continue anyway?"
+            "Directory `{project_name}` is not empty. Continue and allow ManScript to add or replace project files?"
         ))?;
         if !ok {
             return Err(ManscriptError::ProjectExists(dest));
@@ -80,8 +81,8 @@ pub fn execute(
             rt.source.label()
         ));
     } else {
-        progress.fail(&format!(
-            "{} {} not found",
+        progress.note(&format!(
+            "{} {} was not found locally; ManScript will prepare it",
             capitalize(language),
             fw.default_language_version()
         ));
@@ -147,17 +148,12 @@ pub fn execute(
     progress.ok("manscript.toml created");
     progress.finish();
     printer.blank();
-    printer.success(&format!(
-        "{project_name} is ready. The ritual is over. The app remains."
-    ));
-    printer.blank();
-    printer.section("Next:");
-    printer.hint_command(&format!("cd {project_name}"));
-    printer.hint_command("manscript run");
-    printer.hint_command("manscript shell");
+    printer.success(&format!("Project `{project_name}` is ready."));
+    let cd_command = format!("cd {project_name}");
+    printer.next_steps(&[&cd_command, "manscript run", "manscript shell"]);
     printer.blank();
     printer.muted(
-        "  Use manscript run, or manscript shell for ad-hoc tools — no activation required.",
+        "  Use `manscript run` for the configured app command, or `manscript shell` for ad-hoc tools.",
     );
     Ok(())
 }
@@ -199,7 +195,7 @@ fn resolve_inputs(
     if let Some(fw) = framework {
         let _ = registry.framework(&fw)?;
         let n = text(
-            "What should we name this masterpiece?",
+            "What should the project be named?",
             "myproject",
             "letters, numbers, hyphens, underscores",
         )?;
@@ -212,11 +208,7 @@ fn resolve_inputs(
         .iter()
         .map(|l| language_choice(l.id()))
         .collect();
-    let lang = select(
-        "Which language are we borrowing confidence from?",
-        &languages,
-        0,
-    )?;
+    let lang = select("Which language will this project use?", &languages, 0)?;
 
     let fws_real = registry.frameworks_for_language(&lang);
     let fw_choice = if fws_real.is_empty() {
@@ -227,11 +219,11 @@ fn resolve_inputs(
             .map(|f| framework_choice(f.id()))
             .collect();
         fws.push(framework_choice("none"));
-        let choice = select("And which framework gets the starring role?", &fws, 0)?;
+        let choice = select("Which framework will this project use?", &fws, 0)?;
         resolve_none_to_language(&choice, &lang)
     };
     let n = text(
-        "What should we name this masterpiece?",
+        "What should the project be named?",
         "myproject",
         "letters, numbers, hyphens, underscores",
     )?;
@@ -259,7 +251,7 @@ fn create_in_project(
     if gens.is_empty() {
         printer.blank();
         printer.info("This project has no apps or modules to generate.");
-        printer.muted("  Language-only trees are just files. Add what you need, or create a framework project from a fresh folder.");
+        printer.muted("  Language-only projects do not have framework generators. Add files directly, or create a framework project in a new folder.");
         return Ok(());
     }
 
@@ -308,15 +300,13 @@ fn create_in_project(
         yes,
     };
     fw.generate(&ctx, &kind, &name)?;
-    printer.success(&format!(
-        "{name} is in the project. Native tools were not invited."
-    ));
+    printer.success(&format!("Added {kind} `{name}` to the project."));
     Ok(())
 }
 
 fn already_in_project(framework: &str) -> ManscriptError {
     ManscriptError::Message(format!(
-        "This folder is already a ManScript project ({framework}). ManScript will not nest another startproject here.\n\nTo add an app or module inside it:\n\n    manscript create blog\n\nTo start a different project, cd out of this folder first."
+        "This folder is already a ManScript {framework} project, so ManScript will not create another project inside it.\n\nTo add an app or module to the current project, run:\n\n    manscript create blog\n\nTo create a separate project, change to a folder outside this project first."
     ))
 }
 
@@ -340,7 +330,7 @@ fn resolve_in_project_inputs(
                 return Ok((a, b));
             }
             Err(ManscriptError::Message(format!(
-                "`{a}` is not a generator this project knows.\n\nTry:\n\n    manscript create {} {b}",
+                "`{a}` is not a supported generator for this project.\n\nUse:\n\n    manscript create {} {b}",
                 gens[0].id
             )))
         }
@@ -351,7 +341,8 @@ fn resolve_in_project_inputs(
             if is_kind(&a) {
                 if yes {
                     return Err(ManscriptError::Message(
-                        "That generator needs a name. Example: manscript create app blog".into(),
+                        "That generator requires a name.\n\nExample:\n\n    manscript create app blog"
+                            .into(),
                     ));
                 }
                 let n = text(
@@ -372,7 +363,7 @@ fn resolve_in_project_inputs(
             let kind = pick_kind(gens, yes)?;
             if yes {
                 return Err(ManscriptError::Message(
-                    "Say a name: manscript create blog".into(),
+                    "A name is required.\n\nExample:\n\n    manscript create blog".into(),
                 ));
             }
             let n = text(
@@ -383,7 +374,7 @@ fn resolve_in_project_inputs(
             Ok((kind, n))
         }
         (None, Some(_)) => Err(ManscriptError::Message(
-            "Give the name as the first argument: manscript create blog".into(),
+            "The name must be the first argument.\n\nExample:\n\n    manscript create blog".into(),
         )),
     }
 }
@@ -394,7 +385,8 @@ fn pick_kind(gens: &[crate::adapters::traits::GeneratorSpec], yes: bool) -> Resu
     }
     if yes {
         return Err(ManscriptError::Message(
-            "This framework needs a generator kind. Example: manscript create scaffold Post".into(),
+            "This framework requires a generator kind and name.\n\nExample:\n\n    manscript create scaffold Post"
+                .into(),
         ));
     }
     let choices: Vec<Choice<'_>> = gens

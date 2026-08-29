@@ -73,8 +73,6 @@ impl LanguageAdapter for PythonAdapter {
             )
         } else if project.root.join("pyproject.toml").is_file() {
             pip_install(project, &python, &["-e".into(), ".".into()])
-        } else if project.root.join("Gemfile").exists() {
-            Ok(())
         } else {
             Ok(())
         }
@@ -229,7 +227,7 @@ fn resolve_python_program(project: &Project, name: &str) -> Result<PathBuf> {
         return Ok(in_project);
     }
     Err(ManscriptError::InvalidCommand(format!(
-        "cannot resolve '{name}' inside the project environment. Use the environment interpreter or a project script."
+        "could not find `{name}` in the project environment or project root; run `manscript setup` and check the configured command"
     )))
 }
 

@@ -1,157 +1,114 @@
 # ManScript
 
-ManScript is a language-agnostic development environment manager designed to make project setup simple and reproducible.
+ManScript 0.1.2 is a language-agnostic CLI for creating and running projects in isolated development environments. It keeps project tools under `.manscript/environment`, so you do not need to activate a virtual environment or permanently change your shell.
 
-A developer should be able to go from an empty machine to a running app without manually installing a language, creating a virtual environment, activating it, or remembering framework commands.
-
-**While developing this repo** (`manscript` is not on your PATH until you install it):
-
-```bash
-cargo run -- --help
-cargo run -- doctor
-cargo run -- create django myproject
-```
-
-The `--` separates Cargo’s flags from ManScript’s flags.
-
-**Install so you can type `manscript` anywhere:**
-
-```bash
-cargo install --path .
-# if zsh still says "command not found", add ~/.cargo/bin to PATH:
-#   echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
-
-manscript doctor
-manscript create django myproject
-# language only:
-# manscript create python myapp
-cd myproject
-manscript run
-```
-
-**Supported:** macOS, Linux, and Windows via [rustup](https://rustup.rs) and `cargo install`. Homebrew and downloadable binaries are not part of 0.1. Human docs: [`docs/`](docs/) (deploy on Vercel; set the project root directory to `docs`).
-
-Python and Ruby work as **language-only** projects (`manscript create python myapp`) or with frameworks (Django, FastAPI, Flask, Rails, Sinatra). C, C++, and Java are language-only (`manscript create c hello`, `cpp`, `java`). Additional languages can be added later through adapters.
-
-## Why
-
-Typical setup is a pile of one-off commands: install a runtime, fix `PATH`, create a venv, install packages, remember `manage.py` vs `bin/rails`. ManScript encodes those requirements in `manscript.toml` and prepares an isolated environment for you.
-
-ManScript never requires `source .venv/bin/activate`. It can invoke binaries from the project environment directly or open a temporary project-aware child shell.
-
-## Does ManScript turn off Python or Django?
-
-No. Your system `python`, `django-admin`, `ruby`, and `rails` stay exactly as they were.
-
-ManScript does not uninstall them or permanently remove them from PATH. `manscript shell` changes only the environment of the child shell it launches.
-
-- `python` in the terminal → whatever your shell already had (Homebrew, pyenv, …)
-- `manscript run` → this project’s isolated interpreter and packages
-- `manscript shell` → a child shell where this project’s `python`, `pip`, `django-admin`, `ruby`, and other managed tools are first on `PATH`
-- `exit` → returns to the original terminal with its previous `PATH`
-
-See `manscript env` inside a project for the exact paths.
+Supported languages are Python, Ruby, C, C++, and Java. Supported frameworks are Django, FastAPI, Flask, Rails, and Sinatra.
 
 ## Install
 
-**macOS, Linux, and Windows** (Rust required):
+ManScript 0.1.2 is installed from source and requires [Rust](https://rustup.rs):
 
 ```bash
 git clone https://github.com/Harsha-Fernando/manscript.git
 cd manscript
 cargo install --path .
+manscript doctor
 ```
 
-Add `~/.cargo/bin` to PATH if `manscript` is not found (Windows: `%USERPROFILE%\.cargo\bin`).
+Cargo normally installs the binary in `~/.cargo/bin` (Windows: `%USERPROFILE%\.cargo\bin`). See the [installation guide](docs/install.html) if `manscript` is not found.
 
-Homebrew and downloadable binaries are not part of 0.1. To remove ManScript, see [`docs/uninstall.html`](docs/uninstall.html).
+## Choose your starting point
 
-## Commands
+### Start a new project
+
+```bash
+manscript create
+cd myproject
+manscript run
+```
+
+The wizard asks for a language, an optional framework, and a project name. C, C++, and Java have only one project kind, so they skip the framework prompt.
+
+### Adopt an existing, unconfigured project
+
+```bash
+cd existing-project
+manscript init
+manscript setup
+manscript run
+```
+
+Review the generated `manscript.toml` before setup, especially its versions and commands.
+
+### Use a cloned ManScript project
+
+If the repository already contains `manscript.toml`:
+
+```bash
+cd cloned-project
+manscript setup
+manscript run
+```
+
+`setup` prepares the runtime, project environment, and dependencies. The project environment itself is not expected to be committed.
+
+## Common commands
 
 | Command | Purpose |
 |---|---|
-| `manscript create` | Interactive or `manscript create django myproject` |
-| `manscript init` | Write `manscript.toml` in an existing directory |
-| `manscript setup` | Prepare runtime, environment, and dependencies |
-| `manscript install` | Install dependencies into the managed environment |
-| `manscript run` / `test` / `build` | Execute configured commands |
-| `manscript doctor` | Diagnose the machine (never mutates) |
-| `manscript env` | Print resolved environment paths |
-| `manscript shell` | Open a child shell with project-managed tools on `PATH` |
-| `manscript completions` | Print a Tab-completion script (`bash`, `zsh`, `fish`, `powershell`, `elvish`) |
+| `manscript create` | Create a project, or generate an app/module inside one |
+| `manscript init` | Add `manscript.toml` to the current directory |
+| `manscript setup` | Prepare the runtime, environment, and dependencies |
+| `manscript install` | Install dependencies into an existing project environment |
+| `manscript run`, `test`, `build` | Run the corresponding configured command |
+| `manscript doctor` | Diagnose local tools without changing anything |
+| `manscript env` | Show resolved project and environment paths |
+| `manscript shell` | Open a project-aware child shell |
+| `manscript completions` | Print completion code for a supported shell |
 
-Use `--yes` / `-y` for non-interactive confirmation (CI).
+Read the complete [command reference](docs/commands.html).
 
-**Tab completion (zsh):** after `manscript` is on PATH, add this to `~/.zshrc` and open a new terminal:
+## Development shell
 
-```bash
-eval "$(manscript completions zsh)"
-```
-
-Then `manscript` + Tab lists commands (`create`, `run`, `shell`, `doctor`, …). `manscript create` + Tab suggests stacks (`django`, `python`, `c`, …). Completing the word `manscript` itself is the shell completing a binary on PATH (`~/.cargo/bin`).
-
-## How it works
-
-```
-CLI → core (project, config, registry)
-        → language adapters (Python, Ruby, C, C++, Java)
-        → framework adapters (Django, FastAPI, Flask, Rails, Sinatra)
-        → runtime providers (system, uv for Python, mise for Ruby)
-```
-
-The core does not know about pip, uv, Bundler, or mise. Providers are replaceable. If a suitable system runtime exists, ManScript uses it. Otherwise it can download an isolated runtime into `~/.manscript` after confirmation (never sudo).
-
-Project isolation lives in `.manscript/environment` inside the project.
-
-### Development shell
-
-From a directory containing a `manscript.toml` file, or any child directory:
+After `manscript setup`, run:
 
 ```bash
 manscript shell
-which python
-python --version
-exit
 ```
 
-On Unix and macOS, ManScript launches `$SHELL` (falling back to `/bin/sh`). On Windows it uses `COMSPEC` (falling back to PowerShell). The project environment bin directory is prepended only to the child process `PATH`; existing entries and environment variables are preserved. Ruby-specific Bundler and gem variables come from the Ruby adapter. ManScript does not edit `.bashrc`, `.zshrc`, profiles, or other global shell configuration.
+ManScript starts a child shell in the project root with managed tools first on `PATH`. Python uses its virtual-environment tools; Ruby also receives its project Bundler and gem variables; C, C++, and Java use project shims for detected system toolchains. The parent terminal and shell startup files remain unchanged.
 
-If the project environment has not been prepared, run `manscript setup`. If no `manscript.toml` is found, run the command from inside a ManScript project.
+Type `exit` or send EOF to return. See the [shell guide](docs/shell.html).
 
-## Configuration
+## Configuration and command safety
 
-```toml
-name = "myproject"
+`manscript.toml` declares the project name, language and version, optional framework, recorded environment manager, optional runtime provider, and optional `run`, `test`, and `build` commands. In 0.1.2, the language adapter controls the environment implementation.
 
-[language]
-name = "python"
-version = "3.13"
+Configured commands are parsed into a program and arguments. They are not sent through a command shell: `sudo`, path traversal in the program, and shell metacharacters such as `|`, `&&`, `$`, redirects, and backticks are rejected. Treat `manscript.toml` as trusted project configuration, like a Makefile. See [configuration](docs/config.html) and [security](SECURITY.md).
 
-[framework]
-name = "django"
-version = "5.2"
+## Isolation and caches
 
-[environment]
-manager = "venv"
+- Project environments live at `.manscript/environment`.
+- Downloaded runtime tools live below `~/.manscript/tools` by default.
+- Set `MANSCRIPT_HOME` to move that user-level cache.
+- ManScript never uninstalls or disables your system Python, Ruby, Java, or compilers.
 
-[commands]
-run = "python manage.py runserver"
-test = "python manage.py test"
+## Documentation
+
+The plain static documentation site is in [`docs/`](docs/). Start with the [overview](docs/index.html), or read about [creating projects](docs/create.html), [troubleshooting](docs/troubleshooting.html), and [uninstalling](docs/uninstall.html).
+
+## Development
+
+When working on ManScript itself, the binary is not installed automatically:
+
+```bash
+cargo build
+cargo test
+cargo run -- --help
 ```
 
-Commands are executed as argv (no shell). `sudo` and shell metacharacters are rejected.
-
-## Security
-
-ManScript runs subprocesses. It will not escalate privileges, silently modify system files, overwrite a non-empty project without confirmation, or send your project anywhere. Configured project commands are always parsed as argv rather than passed to a command shell. `manscript shell` is an explicit interactive-shell boundary and does not execute a configured command string.
-
-See [SECURITY.md](SECURITY.md).
+The `--` separates Cargo arguments from ManScript arguments.
 
 ## License
 
-Licensed under either of
-
-- [Apache License, Version 2.0](LICENSE-APACHE)
-- [MIT license](LICENSE-MIT)
-
-at your option.
+Licensed under either the [Apache License, Version 2.0](LICENSE-APACHE) or the [MIT license](LICENSE-MIT), at your option.

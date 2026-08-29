@@ -60,7 +60,7 @@ pub fn toolchain_ready(project: &Project, names: &[&str]) -> bool {
 
 pub fn no_packages() -> Result<()> {
     Err(ManscriptError::Message(
-        "This language has no package manager in ManScript yet.\n\nAdd files in the project and use manscript build / manscript run."
+        "This language does not use a package manager through ManScript.\n\nAdd source files directly, then run:\n\n    manscript build\n    manscript run"
             .into(),
     ))
 }
@@ -74,7 +74,7 @@ pub fn compile_to_app(project: &Project, compiler_shim: &str, source: &str) -> R
     let src = project.root.join(source);
     if !src.is_file() {
         return Err(ManscriptError::Message(format!(
-            "No `{source}` in this project. Add it, then run again."
+            "ManScript could not build the project because `{source}` is missing from the project root.\n\nAdd the file, then run `manscript build` or `manscript run` again."
         )));
     }
     let compiler = env_tool(project, compiler_shim)?;
@@ -99,7 +99,8 @@ pub fn javac_main(project: &Project) -> Result<()> {
     let src = project.root.join("Main.java");
     if !src.is_file() {
         return Err(ManscriptError::Message(
-            "No `Main.java` in this project. Add it, then run again.".into(),
+            "ManScript could not build the Java project because `Main.java` is missing from the project root.\n\nAdd `Main.java`, then run `manscript build` or `manscript run` again."
+                .into(),
         ));
     }
     let prepared = PreparedCommand {
@@ -151,7 +152,7 @@ pub fn env_tool(project: &Project, name: &str) -> Result<PathBuf> {
         Ok(path)
     } else {
         Err(ManscriptError::InvalidCommand(format!(
-            "cannot resolve '{name}' inside the project environment."
+            "could not find `{name}` in the project environment; run `manscript setup` and check the configured command"
         )))
     }
 }

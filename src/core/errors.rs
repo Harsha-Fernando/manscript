@@ -7,42 +7,42 @@ pub enum ManscriptError {
     #[error("{0}")]
     Message(String),
 
-    #[error("A project already exists at `{0}`.\n\nManScript will not overwrite it unless you confirm. Pick a new folder name, or remove that directory first.")]
+    #[error("A file or directory already exists at:\n  {0}\n\nManScript left it unchanged. Choose a different project name, or move/remove the existing path before trying again.")]
     ProjectExists(PathBuf),
 
-    #[error("This folder is not a ManScript project.\n\nI looked here and in parent folders for a file named manscript.toml, and did not find one.\n\nIf this is a new app, run:\n\n    manscript create django myproject\n\nIf the app already exists, cd into it (or run manscript init).")]
+    #[error("This folder is not inside a ManScript project.\n\nManScript looked in the current folder and its parents but could not find `manscript.toml`.\n\nTo configure an existing project, run:\n\n    manscript init\n    manscript setup\n\nTo create a new project, run:\n\n    manscript create")]
     ProjectNotFound,
 
-    #[error("`{0}` is not a framework ManScript knows yet.\n\nFrameworks:\n  django, fastapi, flask, rails, sinatra\n\nLanguage only:\n  python, ruby, c, cpp, java\n\nExamples:\n\n    manscript create django myproject\n    manscript create python myapp\n    manscript create c hello")]
+    #[error("`{0}` is not a supported framework or language.\n\nSupported frameworks:\n  django, fastapi, flask, rails, sinatra\n\nLanguage-only projects:\n  python, ruby, c, cpp, java\n\nExamples:\n\n    manscript create django myproject\n    manscript create python myapp\n    manscript create c hello")]
     UnknownFramework(String),
 
     #[error(
-        "`{0}` is not a language ManScript knows yet.\n\nLanguages: python, ruby, c, cpp, java."
+        "`{0}` is not a supported language.\n\nSupported languages:\n  python, ruby, c, cpp, java"
     )]
     UnknownLanguage(String),
 
-    #[error("`{0}` is not a valid project name.\n\nUse only letters, numbers, hyphens, and underscores. Do not use spaces or paths like ../myapp.")]
+    #[error("`{0}` is not a valid project name.\n\nUse only letters, numbers, hyphens, and underscores. Enter a name, not a path; for example:\n\n    my-project")]
     InvalidProjectName(String),
 
-    #[error("That run command is not allowed.\n\n{0}\n\nManScript runs commands as a simple program plus arguments (not a shell), so things like sudo, |, &&, and $ are blocked.")]
+    #[error("ManScript could not safely run that configured command.\n\n{0}\n\nCommands must contain one program followed by arguments. Shell operators such as `|`, `&&`, `$`, redirection, and `sudo` are not supported.")]
     InvalidCommand(String),
 
-    #[error("{language} {version} is needed for this project, but ManScript could not find it on this machine.\n\nManScript can prepare an isolated {language} runtime for you (no sudo).\n\nRun:\n\n    manscript setup")]
+    #[error("This project requires {language} {version}, but ManScript could not find a compatible runtime.\n\nPrepare the required runtime and project environment with:\n\n    manscript setup")]
     RuntimeNotFound { language: String, version: String },
 
-    #[error("The project environment is not ready yet.\n\nLooked in:\n  {0}\n\nPrepare it with:\n\n    manscript setup")]
+    #[error("The project environment is not ready.\n\nExpected it at:\n  {0}\n\nCreate the environment and install dependencies with:\n\n    manscript setup")]
     EnvironmentNotReady(PathBuf),
 
     #[error("Stopped. Nothing was changed.")]
     Cancelled,
 
-    #[error("ManScript will not run sudo or raise privileges.\n\nInstall or change things only in your user directory, or run setup so ManScript can use an isolated runtime.")]
+    #[error("ManScript refused to run `sudo` or elevate privileges.\n\nProject commands must run with your current user permissions. Use `manscript setup` to prepare supported tools in user- or project-owned directories.")]
     SudoRefused,
 
-    #[error("Could not read or write a file.\n\n{0}\n\nCheck that the path exists and that you have permission to use it.")]
+    #[error("ManScript could not access a required file or directory.\n\nSystem detail:\n  {0}\n\nCheck that the path exists, is writable when required, and is accessible to your user account.")]
     Io(String),
 
-    #[error("manscript.toml is not valid.\n\n{0}\n\nOpen the file and check quotes, brackets, and section names like [language] and [commands].")]
+    #[error("ManScript could not read `manscript.toml` because its TOML syntax is invalid.\n\nParser detail:\n  {0}\n\nCheck quotes, brackets, and section names such as `[language]` and `[commands]`, then try again.")]
     Toml(String),
 }
 
@@ -71,3 +71,25 @@ impl ManscriptError {
 }
 
 pub type Result<T> = std::result::Result<T, ManscriptError>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn project_not_found_explains_both_recovery_paths() {
+        let message = ManscriptError::ProjectNotFound.to_string();
+        assert!(message.contains("manscript.toml"));
+        assert!(message.contains("manscript init"));
+        assert!(message.contains("manscript setup"));
+        assert!(message.contains("manscript create"));
+    }
+
+    #[test]
+    fn environment_not_ready_names_path_and_next_step() {
+        let message = ManscriptError::EnvironmentNotReady(PathBuf::from(".manscript/environment"))
+            .to_string();
+        assert!(message.contains(".manscript/environment"));
+        assert!(message.contains("manscript setup"));
+    }
+}

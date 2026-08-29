@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" id="top">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configuration reference — ManScript</title>
+  <meta name="description" content="Complete manscript.toml schema, examples, defaults, and command argv security behavior.">
+  <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Primary"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html" aria-current="page">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></header>
+  <main id="main">
+    <p class="eyebrow">Reference</p><h1><code>manscript.toml</code></h1>
+    <p class="lede">The configuration file describes one project. ManScript searches for it from the current directory upward, so commands also work from project subdirectories.</p>
+
+    <h2>Complete example</h2>
+    <pre><code>name = "myproject"
+
+[language]
+name = "python"
+version = "3.13"
+
+[framework]
+name = "django"
+version = "5.2"
+
+[environment]
+manager = "venv"
+
+[runtime]
+provider = "system"
+
+[commands]
+run = "python manage.py runserver"
+test = "python manage.py test"
+build = "python -m compileall ."</code></pre>
+    <p>Language-only projects omit the entire <code>[framework]</code> section. Optional sections and command keys may also be omitted.</p>
+
+    <h2>Schema</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Key</th><th scope="col">Type</th><th scope="col">Required?</th><th scope="col">Meaning</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><code>name</code></th><td>string</td><td>Yes</td><td>Human-readable project name and child-shell prompt source.</td></tr>
+          <tr><th scope="row"><code>language.name</code></th><td>string</td><td>Yes</td><td><code>python</code>, <code>ruby</code>, <code>c</code>, <code>cpp</code>, or <code>java</code>.</td></tr>
+          <tr><th scope="row"><code>language.version</code></th><td>string</td><td>Yes</td><td>Runtime version requirement used during detection and setup.</td></tr>
+          <tr><th scope="row"><code>framework.name</code></th><td>string</td><td>With section</td><td><code>django</code>, <code>fastapi</code>, <code>flask</code>, <code>rails</code>, or <code>sinatra</code>.</td></tr>
+          <tr><th scope="row"><code>framework.version</code></th><td>string</td><td>With section</td><td>Configured framework version.</td></tr>
+          <tr><th scope="row"><code>environment.manager</code></th><td>string</td><td>No</td><td>Records the adapter's environment strategy. Generated configs use <code>venv</code>, <code>bundler</code>, or <code>toolchain</code>. In 0.1.2, the selected language adapter controls the implementation; changing this value does not switch environment providers.</td></tr>
+          <tr><th scope="row"><code>runtime.provider</code></th><td>string</td><td>No</td><td>Provider preference: <code>system</code>, <code>uv</code>, or <code>mise</code> where supported. If omitted, the registry resolves a suitable provider.</td></tr>
+          <tr><th scope="row"><code>commands.run</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript run</code>; run errors when absent.</td></tr>
+          <tr><th scope="row"><code>commands.test</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript test</code>; absence is a successful no-op.</td></tr>
+          <tr><th scope="row"><code>commands.build</code></th><td>string</td><td>No</td><td>Program and arguments for <code>manscript build</code>; adapters may provide build behavior themselves.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>When omitted, <code>[environment]</code>, <code>[runtime]</code>, and <code>[commands]</code> deserialize to empty/default values. There is no separate lock-file schema in 0.1.2.</p>
+
+    <h2>Command strings become argv</h2>
+    <p>Configured commands look like shell text for readability, but ManScript does not run them through a shell. It splits the text into a program and arguments, resolves the program through the selected language adapter, and launches it directly.</p>
+    <pre><code>run = "python -m uvicorn main:app --port 8000"</code></pre>
+    <p>This becomes an argv sequence equivalent to <code>["python", "-m", "uvicorn", "main:app", "--port", "8000"]</code>. Extra CLI arguments are appended literally:</p>
+    <pre><code>manscript run --log-level debug</code></pre>
+
+    <h3>Quoting and escaping</h3>
+    <ul>
+      <li>Whitespace separates arguments outside quotes.</li>
+      <li>Single and double quotes group spaces and are removed.</li>
+      <li>A backslash escapes the next character outside single quotes.</li>
+      <li>Environment variables, globs, substitutions, and shell built-ins are not expanded.</li>
+    </ul>
+
+    <h3>Rejected input</h3>
+    <p>ManScript rejects empty commands, unclosed quotes, <code>sudo</code>, program path traversal with <code>..</code>, and tokens containing <code>|</code>, <code>;</code>, <code>&amp;</code>, <code>&gt;</code>, <code>&lt;</code>, backticks, or <code>$</code>.</p>
+    <aside class="callout warning"><h3>Configuration is still trusted</h3><p>Direct argv execution reduces shell-injection risk, but a command can still run an executable and dependencies can run installation code. Review <code>manscript.toml</code> in an unfamiliar repository before setup or execution.</p></aside>
+
+    <h2>Storage locations</h2>
+    <p>The project environment always lives under <code>.manscript/environment</code>. User-level downloaded tools live under <code>~/.manscript/tools</code> by default. Set <code>MANSCRIPT_HOME</code> before running ManScript to move that user cache; it does not move the project-local environment.</p>
+  </main>
+  <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html" aria-current="page">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>
+  <a class="to-top" href="#top">Back to top</a><script src="copy.js" defer></script>
+</body>
+</html>

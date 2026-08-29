@@ -89,11 +89,13 @@ impl AdapterRegistry {
                 .iter()
                 .find(|p| p.id() == id)
                 .ok_or_else(|| {
-                    ManscriptError::Message(format!("unknown runtime provider '{id}'"))
+                    ManscriptError::Message(format!(
+                        "`{id}` is not a registered runtime provider.\n\nCheck `[runtime].provider` in `manscript.toml`, or remove that setting to use the default provider."
+                    ))
                 })?;
             if !provider.supports(language) {
                 return Err(ManscriptError::Message(format!(
-                    "provider '{id}' does not support {language}"
+                    "Runtime provider `{id}` does not support {language}.\n\nChoose a compatible provider in `manscript.toml`, or remove `[runtime].provider` to use the default."
                 )));
             }
             return provider.prepare(language, version, confirm);

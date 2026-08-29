@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" id="top">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Development shell — ManScript</title>
+  <meta name="description" content="Use ManScript's temporary project-aware child shell for Python, Ruby, C, C++, and Java tools.">
+  <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Primary"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html" aria-current="page">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></header>
+  <main id="main">
+    <p class="eyebrow">Project tools on demand</p><h1>Development shell</h1>
+    <p class="lede"><code>manscript shell</code> opens an interactive child shell in the project root. Managed project tools come first on that child's <code>PATH</code>; your original terminal is not modified.</p>
+
+    <h2>Prepare the project first</h2>
+    <p>The command requires both <code>manscript.toml</code> and a ready project environment.</p>
+    <pre><code>cd /path/to/project
+manscript setup
+manscript shell</code></pre>
+    <p>Setup is normally already complete after <code>manscript create</code>. Run it after cloning a configured project because `.manscript/environment` is not normally committed.</p>
+
+    <h2>What changes in the child</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Project language</th><th scope="col">Child-shell behavior</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Python</th><td>Prepends `.manscript/environment/bin` (or the Windows equivalent), exposing the environment's Python, pip, and installed scripts.</td></tr>
+          <tr><th scope="row">Ruby</th><td>Prepends project and Ruby gem bin directories and sets <code>GEM_HOME</code>, <code>GEM_PATH</code>, <code>BUNDLE_PATH</code>, <code>BUNDLE_BIN</code>, <code>BUNDLE_GEMFILE</code>, and, when available, <code>RUBY_ROOT</code>.</td></tr>
+          <tr><th scope="row">C and C++</th><td>Prepends the project tool bin containing shims to the system compiler detected during setup.</td></tr>
+          <tr><th scope="row">Java</th><td>Prepends project shims for the detected system <code>javac</code> and <code>java</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Existing <code>PATH</code> entries and inherited environment variables remain after the prepended entries. Changes are passed through the child process environment only. ManScript does not call activation scripts, edit `.zshrc`, `.bashrc`, profiles, or change the parent process.</p>
+
+    <h2>Prompt and shell selection</h2>
+    <p>On Unix and macOS, ManScript launches the executable named by <code>SHELL</code>, falling back to <code>/bin/sh</code>. It supplies a sanitized <code>PS1</code> based on the project name on Unix only. Your shell may replace that prompt from its own startup configuration.</p>
+    <p>On Windows, ManScript launches <code>COMSPEC</code>, falling back to <code>powershell.exe</code>. It does not set <code>PS1</code> there.</p>
+    <p><code>MANSCRIPT_SHELL</code> is an explicit diagnostic/test override for the executable path. It is not parsed as a command string and cannot contain shell arguments.</p>
+
+    <h2>Working in the shell</h2>
+    <pre><code># Python example
+which python
+python --version
+pip list
+
+# Ruby example
+which ruby
+bundle exec rails routes</code></pre>
+    <p>Commands entered interactively are handled by your chosen shell. They are therefore outside the restricted argv model used for commands from <code>manscript.toml</code>. Review any command before running it.</p>
+
+    <h2>Exit and EOF</h2>
+    <p>Type <code>exit</code> or send your shell's EOF keystroke (commonly Ctrl-D on Unix) to close the child. After a successful exit, ManScript prints:</p>
+    <blockquote><p>Development shell closed. Your original terminal environment is unchanged. Goodbye.</p></blockquote>
+    <p>If the child shell exits with a non-zero status, ManScript returns that status instead of reporting a successful close.</p>
+
+    <h2>Recover from common errors</h2>
+    <h3>No ManScript project</h3>
+    <p>Change into a directory containing <code>manscript.toml</code>, or a child directory. For an existing unconfigured project:</p>
+    <pre><code>manscript init
+manscript setup
+manscript shell</code></pre>
+    <h3>Environment not ready</h3>
+    <pre><code>manscript setup
+manscript shell</code></pre>
+    <p>If setup fails to detect a runtime, compiler, or JDK, follow the <a href="troubleshooting.html">troubleshooting guide</a>. Use <code>manscript env</code> to inspect the paths ManScript resolved.</p>
+  </main>
+  <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html">Troubleshooting</a><a href="shell.html" aria-current="page">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>
+  <a class="to-top" href="#top">Back to top</a><script src="copy.js" defer></script>
+</body>
+</html>

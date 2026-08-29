@@ -127,7 +127,7 @@ fn install_python(uv: &Path, version: &str) -> Result<()> {
     let output = cmd.output()?;
     if !output.status.success() {
         return Err(ManscriptError::Message(format!(
-            "uv python install {version} failed:\n{}{}",
+            "`uv` could not install Python {version}.\n\nTool output:\n{}{}\nCheck the output above, then run `manscript setup` again.",
             String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         )));
@@ -138,7 +138,7 @@ fn install_python(uv: &Path, version: &str) -> Result<()> {
 fn bootstrap_uv() -> Result<PathBuf> {
     let Some((target, bin_name)) = uv_download_target() else {
         return Err(ManscriptError::Message(
-            "uv bootstrap is not supported on this platform yet. Install uv manually and re-run."
+            "Automatic `uv` installation is not supported on this platform.\n\nInstall `uv` or a compatible Python runtime manually, then run `manscript setup` again."
                 .into(),
         ));
     };
@@ -151,7 +151,10 @@ fn bootstrap_uv() -> Result<PathBuf> {
     let _ = std::fs::remove_dir_all(&extract_dir);
     extract_tar_gz(&archive, &extract_dir)?;
     let found = find_named_file(&extract_dir, bin_name).ok_or_else(|| {
-        ManscriptError::Message("downloaded uv archive did not contain a uv binary".into())
+        ManscriptError::Message(
+            "The downloaded `uv` archive did not contain the expected executable.\n\nRemove the incomplete `uv` directory from the ManScript cache, then run `manscript setup` again."
+                .into(),
+        )
     })?;
     let dest_bin = dest_dir.join(bin_name);
     std::fs::copy(&found, &dest_bin)?;

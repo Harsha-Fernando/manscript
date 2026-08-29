@@ -27,11 +27,7 @@ pub fn execute(registry: &AdapterRegistry, yes: bool) -> Result<()> {
     let language = if yes {
         "python".to_string()
     } else {
-        select(
-            "Which language are we borrowing confidence from?",
-            &languages,
-            0,
-        )?
+        select("Which language does this project use?", &languages, 0)?
     };
     let fws_real = registry.frameworks_for_language(&language);
     let fw = if fws_real.is_empty() {
@@ -47,7 +43,7 @@ pub fn execute(registry: &AdapterRegistry, yes: bool) -> Result<()> {
                 .map(|c| c.id.to_string())
                 .unwrap_or_else(|| "none".into())
         } else {
-            let choice = select("And which framework gets the starring role?", &fws, 0)?;
+            let choice = select("Which framework does this project use?", &fws, 0)?;
             resolve_none_to_language(&choice, &language)
         }
     };
@@ -82,10 +78,8 @@ pub fn execute(registry: &AdapterRegistry, yes: bool) -> Result<()> {
         commands,
     );
     config.save(&dest)?;
-    printer.success(&format!("wrote {CONFIG_FILE_NAME}"));
-    printer.blank();
-    printer.muted("  Next:");
-    printer.hint_command("manscript setup");
+    printer.success(&format!("Created `{CONFIG_FILE_NAME}`."));
+    printer.next_steps(&["manscript setup"]);
     let _ = ConfirmPolicy::AlwaysYes;
     Ok(())
 }

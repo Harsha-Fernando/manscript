@@ -62,13 +62,17 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
 
     printer.blank();
     if failed {
-        printer.warn("Recommendation");
+        printer.warn(if recommendations.len() == 1 {
+            "Recommended next step"
+        } else {
+            "Recommended next steps"
+        });
         for rec in recommendations {
             printer.line(&rec);
             printer.blank();
         }
     } else {
-        printer.success("Everything looks good. Go forth and ship.");
+        printer.success("Everything looks good. ManScript is ready to use.");
     }
     Ok(())
 }

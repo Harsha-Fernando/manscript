@@ -129,7 +129,7 @@ fn install_ruby(mise: &Path, version: &str) -> Result<()> {
     let output = cmd.output()?;
     if !output.status.success() {
         return Err(ManscriptError::Message(format!(
-            "mise install {spec} failed:\n{}{}",
+            "`mise` could not install {spec}.\n\nTool output:\n{}{}\nCheck the output above, then run `manscript setup` again.",
             String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         )));
@@ -140,7 +140,7 @@ fn install_ruby(mise: &Path, version: &str) -> Result<()> {
 fn bootstrap_mise() -> Result<PathBuf> {
     let Some((target, bin_name)) = mise_download_target() else {
         return Err(ManscriptError::Message(
-            "mise bootstrap is not supported on this platform yet. Install mise or Ruby manually and re-run.".into(),
+            "Automatic `mise` installation is not supported on this platform.\n\nInstall `mise` or a compatible Ruby runtime manually, then run `manscript setup` again.".into(),
         ));
     };
     let dest_dir = tools_dir().join("mise");
@@ -169,7 +169,10 @@ fn bootstrap_mise() -> Result<PathBuf> {
     let _ = std::fs::remove_dir_all(&extract_dir);
     extract_tar_gz(&archive, &extract_dir)?;
     let found = find_named_file(&extract_dir, bin_name).ok_or_else(|| {
-        ManscriptError::Message("downloaded mise archive did not contain a mise binary".into())
+        ManscriptError::Message(
+            "The downloaded `mise` archive did not contain the expected executable.\n\nRemove the incomplete `mise` directory from the ManScript cache, then run `manscript setup` again."
+                .into(),
+        )
     })?;
     let dest_bin = dest_dir.join(bin_name);
     std::fs::copy(&found, &dest_bin)?;

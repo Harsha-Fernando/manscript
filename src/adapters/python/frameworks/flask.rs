@@ -61,7 +61,7 @@ impl FrameworkAdapter for FlaskFramework {
                     self.default_commands(ctx.project_name),
                 ),
             },
-            &[pin.clone()],
+            std::slice::from_ref(&pin),
         )?;
 
         write_file(
@@ -86,7 +86,7 @@ def index():
     fn generate(&self, ctx: &GenerateContext<'_>, kind: &str, name: &str) -> Result<()> {
         if kind != "blueprint" {
             return Err(ManscriptError::Message(format!(
-                "Flask can add a `blueprint`, not `{kind}`."
+                "Flask does not support the `{kind}` generator.\n\nUse:\n\n    manscript create blueprint <name>"
             )));
         }
         let pkg = ctx.project.root.join("blueprints").join(name);
@@ -113,7 +113,8 @@ def index():
         let app_py = ctx.project.root.join("app.py");
         if !app_py.is_file() {
             return Err(ManscriptError::Message(
-                "Expected app.py in this Flask project so the blueprint can be registered.".into(),
+                "ManScript created the blueprint but could not register it because `app.py` is missing.\n\nRestore the Flask entry file, then add the blueprint import and `app.register_blueprint(...)` call."
+                    .into(),
             ));
         }
         append_unique(

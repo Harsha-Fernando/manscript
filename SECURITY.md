@@ -6,29 +6,49 @@ The 0.1.x line is the current development release.
 
 ## Reporting a vulnerability
 
-Please **do not** open a public issue for security problems.
+Do not open a public issue for a security problem. Contact the maintainers privately and include:
 
-Email or otherwise contact the maintainers privately with:
+- A clear description of the issue
+- Steps to reproduce it
+- The expected and actual behavior
+- The potential impact, such as unexpected process execution, path traversal, or privilege concerns
 
-- A description of the issue
-- Steps to reproduce
-- Impact (for example: unexpected subprocess execution, path traversal, privilege concerns)
+## Trust model
 
-## Design notes
+ManScript executes language runtimes, package managers, compilers, and project commands on the user's behalf. Review a cloned project's `manscript.toml` before running `manscript setup`, `install`, `run`, `test`, or `build`. Treat the file as trusted executable configuration, similar to a Makefile.
 
-ManScript executes language toolchains on behalf of the user.
+ManScript does not:
 
-It will not:
+- Invoke `sudo` or deliberately raise privileges
+- Run configured commands through a command shell
+- Silently modify system files or shell startup files
+- Modify the parent process environment
+- Overwrite a non-empty project without confirmation
+- Upload project contents to a remote service
 
-- Run configured project commands through a shell or interpolate them into shell strings
-- Invoke `sudo` or escalate privileges
-- Modify system files silently
-- Modify shell startup files or the parent process environment
-- Overwrite an existing project without confirmation
-- Send project contents to a remote service
+## Configured command model
 
-Commands in `manscript.toml` are treated as argv and validated. Treat that file as trusted configuration for the local project, similar to a Makefile.
+Values under `[commands]` are split into a program and argument vector. Single and double quotes group arguments, and backslashes escape the next character outside single quotes. No variable expansion, globbing, pipes, redirects, command substitution, or command chaining takes place.
 
-`manscript shell` is the explicit exception that launches the user's interactive shell. It starts the shell executable directly, with no `-c` command string, and inherits stdin, stdout, and stderr. Project tool paths and adapter-specific variables are applied only to that child process. The project name is sanitized before it is placed in the prompt so prompt expansion cannot execute configuration content.
+ManScript rejects:
 
-On Unix, the child executable normally comes from `SHELL`; on Windows it normally comes from `COMSPEC`. `MANSCRIPT_SHELL` is an explicit test/diagnostic override. These values select one executable path only—they are never parsed as command strings or combined with arbitrary arguments.
+- `sudo` as a command token
+- `..` path traversal in the program
+- Shell metacharacters: `|`, `;`, `&`, `>`, `<`, backticks, and `$`
+- Empty commands and unclosed quotes
+
+The first token must also resolve through the selected language adapter: generally a managed environment tool or a project-local executable. Additional arguments supplied after `manscript run`, `test`, or `build` are appended as literal argv values.
+
+This reduces shell-injection risk; it does not make an untrusted executable or dependency safe.
+
+## Interactive shell boundary
+
+`manscript shell` deliberately launches an interactive shell executable. It does not execute a configured command and does not pass `-c` or another command string.
+
+On Unix and macOS, the executable comes from `SHELL`, with `/bin/sh` as the fallback. On Windows, it comes from `COMSPEC`, with `powershell.exe` as the fallback. `MANSCRIPT_SHELL` is an explicit diagnostic and test override. Each value selects one executable path; it is not parsed into a command and arguments.
+
+The child receives project tool paths and adapter-specific variables. On Unix, ManScript also supplies a sanitized project prompt. The environment changes exist only in that child process. Exiting it returns to the original terminal environment.
+
+## Files and downloads
+
+Project environments are written below `.manscript/environment`. Runtime providers may download tools below `MANSCRIPT_HOME`, or `~/.manscript` when that variable is unset. ManScript does not use `sudo`; users should still verify repository and package sources before installing dependencies.

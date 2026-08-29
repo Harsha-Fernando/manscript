@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" id="top">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Troubleshooting — ManScript</title>
+  <meta name="description" content="Troubleshoot ManScript doctor checks, PATH, missing projects and environments, runtimes, compilers, and JDK detection.">
+  <link rel="icon" type="image/png" href="static/favicon.png"><link rel="apple-touch-icon" href="static/favicon.png"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Primary"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html" aria-current="page">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></header>
+  <main id="main">
+    <p class="eyebrow">Problem solving</p><h1>Troubleshooting</h1>
+    <p class="lede">Start with the read-only diagnostic command. Its recommendations are tailored to the tools ManScript can detect.</p>
+    <pre><code>manscript doctor</code></pre>
+
+    <h2>What doctor checks</h2>
+    <p>Doctor reports the platform and ManScript version, then checks Python and its <code>venv</code> module, pip or uv, Ruby and Bundler, C and C++ compilers, and <code>javac</code>. When run inside a configured project, it also reports project identity and environment readiness.</p>
+    <p>A failed system-runtime check does not always block Python or Ruby: <code>manscript setup</code> may prepare an isolated runtime after confirmation. Compiler and JDK failures do block their languages because ManScript 0.1.2 does not download those toolchains.</p>
+
+    <h2 id="path"><code>manscript: command not found</code></h2>
+    <ol>
+      <li>Confirm installation completed: <code>cargo install --path .</code></li>
+      <li>Open a new terminal.</li>
+      <li>Confirm Cargo's bin directory exists and is on <code>PATH</code>.</li>
+    </ol>
+    <h3>zsh</h3>
+    <pre><code>export PATH="$HOME/.cargo/bin:$PATH"
+manscript --version</code></pre>
+    <h3>bash</h3>
+    <pre><code>export PATH="$HOME/.cargo/bin:$PATH"
+manscript --version</code></pre>
+    <h3>PowerShell</h3>
+    <pre><code>$env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
+manscript --version</code></pre>
+    <p>These examples affect the current terminal. Add the equivalent line to your shell's user configuration only if you want it to persist.</p>
+
+    <h2>“This folder is not a ManScript project”</h2>
+    <p>ManScript looked in the current directory and each parent but found no <code>manscript.toml</code>.</p>
+    <div class="card-grid">
+      <article class="card"><h3>New project</h3><pre><code>cd ..
+manscript create</code></pre></article>
+      <article class="card"><h3>Existing project</h3><pre><code>cd /path/to/project
+manscript init
+manscript setup</code></pre></article>
+      <article class="card"><h3>Already configured</h3><p>Change into the repository tree that contains <code>manscript.toml</code>.</p></article>
+    </div>
+
+    <h2>“Project environment is not ready”</h2>
+    <p>The project exists, but expected tools are missing from <code>.manscript/environment</code>. Prepare or repair it:</p>
+    <pre><code>manscript setup
+manscript env</code></pre>
+    <p>Use setup after cloning because project environments are normally ignored by Git. <code>install</code>, <code>run</code>, <code>test</code>, <code>build</code>, and <code>shell</code> require the environment to be ready.</p>
+
+    <h2>Python runtime or venv not detected</h2>
+    <p>Run <code>manscript setup</code>. ManScript first looks for a suitable system Python and can use the uv provider to prepare an isolated Python runtime. If system Python exists but <code>python -m venv</code> fails, install the platform's venv support or allow setup to use an isolated runtime.</p>
+
+    <h2>Ruby or Bundler not detected</h2>
+    <p>Setup can prepare Ruby through mise and installs Bundler for the project when necessary. Ruby dependencies and Bundler state are isolated through <code>.bundle/config</code> and <code>.manscript/environment</code>.</p>
+    <pre><code>manscript setup
+manscript shell</code></pre>
+
+    <h2>C or C++ compiler not detected</h2>
+    <p>Install a real system compiler and ensure <code>cc</code> or <code>c++</code> is on <code>PATH</code>. On macOS, install Xcode Command Line Tools. On Linux, install GCC or Clang. On Windows, use LLVM or MinGW; a launcher stub that cannot compile is not sufficient.</p>
+    <pre><code>cc --version
+c++ --version
+manscript doctor
+manscript setup</code></pre>
+    <p>Setup records project shims that point to the detected compiler; it does not copy or download a compiler.</p>
+
+    <h2>Java or JDK not detected</h2>
+    <p>Install JDK 17 or newer and ensure both <code>javac</code> and <code>java</code> are runnable. A JRE alone is insufficient.</p>
+    <pre><code>javac -version
+java -version
+manscript doctor
+manscript setup</code></pre>
+
+    <h2>Configuration errors</h2>
+    <p>Check TOML quotes, section names, and required <code>name</code>, <code>language.name</code>, and <code>language.version</code> fields. See the <a href="config.html">complete schema</a>. For a configured command rejection, remove shell syntax and express the operation as one directly executable program plus arguments.</p>
+
+    <aside class="callout"><h2>Still stuck?</h2><p>Capture <code>manscript --version</code>, <code>manscript doctor</code>, your operating system, and a redacted <code>manscript.toml</code>, then open an issue on <a href="https://github.com/Harsha-Fernando/manscript">GitHub</a>. Do not post secrets or private vulnerability details.</p></aside>
+  </main>
+  <footer class="site-footer"><a class="brand" href="index.html" aria-label="ManScript home"><img src="static/manscript-logo.jpg" alt="ManScript" width="220" height="58"></a><nav class="site-nav" aria-label="Footer"><a href="index.html">Home</a><a href="install.html">Install</a><a href="create.html">Create</a><a href="commands.html">Commands</a><a href="config.html">Config</a><a href="troubleshooting.html" aria-current="page">Troubleshooting</a><a href="shell.html">Shell</a><a href="uninstall.html">Uninstall</a><a href="https://github.com/Harsha-Fernando/manscript" rel="noopener noreferrer">GitHub</a></nav></footer>
+  <a class="to-top" href="#top">Back to top</a><script src="copy.js" defer></script>
+</body>
+</html>

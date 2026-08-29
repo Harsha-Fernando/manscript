@@ -90,7 +90,7 @@ def read_root():
     fn generate(&self, ctx: &GenerateContext<'_>, kind: &str, name: &str) -> Result<()> {
         if kind != "router" {
             return Err(ManscriptError::Message(format!(
-                "FastAPI can add a `router`, not `{kind}`."
+                "FastAPI does not support the `{kind}` generator.\n\nUse:\n\n    manscript create router <name>"
             )));
         }
         let file = ctx.project.root.join("routers").join(format!("{name}.py"));
@@ -117,7 +117,8 @@ def index():
         let main_py = ctx.project.root.join("main.py");
         if !main_py.is_file() {
             return Err(ManscriptError::Message(
-                "Expected main.py in this FastAPI project so the router can be included.".into(),
+                "ManScript created the router but could not register it because `main.py` is missing.\n\nRestore the FastAPI entry file, then add the router import and `app.include_router(...)` call."
+                    .into(),
             ));
         }
         append_unique(

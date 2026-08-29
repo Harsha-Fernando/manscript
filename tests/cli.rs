@@ -32,6 +32,18 @@ fn write_shell_stub(root: &std::path::Path) -> std::path::PathBuf {
     stub
 }
 
+#[cfg(unix)]
+fn write_failing_shell_stub(root: &std::path::Path, code: i32) -> std::path::PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+
+    let stub = root.join("failing-shell-stub");
+    std::fs::write(&stub, format!("#!/bin/sh\nexit {code}\n")).unwrap();
+    let mut permissions = std::fs::metadata(&stub).unwrap().permissions();
+    permissions.set_mode(0o755);
+    std::fs::set_permissions(&stub, permissions).unwrap();
+    stub
+}
+
 fn has_bin(name: &str) -> bool {
     match ProcCommand::new(name).arg("--version").output() {
         Err(e) if e.kind() == ErrorKind::NotFound => false,
@@ -94,7 +106,10 @@ fn shell_requires_a_manscript_project() {
         .arg("shell")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("not a ManScript project"));
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::contains("could not find `manscript.toml`"))
+        .stderr(predicate::str::contains("manscript init"))
+        .stderr(predicate::str::contains("manscript create"));
 }
 
 #[test]
@@ -142,12 +157,51 @@ fn shell_prepends_project_bin_and_preserves_parent_environment() {
         .stdout(predicate::str::contains(format!(
             "CHILD_PATH={}",
             expected_path.to_string_lossy()
-        )));
+        )))
+        .stdout(predicate::str::contains(
+            "Development shell closed. Your original terminal environment is unchanged. Goodbye.",
+        ));
 
     assert_eq!(std::env::var_os("PATH"), parent_path);
     assert!(!home.path().join(".bashrc").exists());
     assert!(!home.path().join(".zshrc").exists());
     assert!(!home.path().join(".profile").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn shell_reports_and_preserves_nonzero_exit_code() {
+    let dir = tempfile::tempdir().unwrap();
+    write_python_project(dir.path());
+    let environment_bin = dir.path().join(".manscript/environment/bin");
+    std::fs::create_dir_all(&environment_bin).unwrap();
+    std::fs::write(environment_bin.join("python"), "").unwrap();
+    let stub = write_failing_shell_stub(dir.path(), 42);
+
+    bin()
+        .current_dir(dir.path())
+        .env("MANSCRIPT_SHELL", stub)
+        .arg("shell")
+        .assert()
+        .code(42)
+        .stdout(predicate::str::contains(
+            "Development shell closed with exit code 42",
+        ))
+        .stdout(predicate::str::contains("Goodbye.").not());
+}
+
+#[test]
+fn install_requires_a_ready_environment() {
+    let dir = tempfile::tempdir().unwrap();
+    write_python_project(dir.path());
+
+    bin()
+        .current_dir(dir.path())
+        .arg("install")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("project environment is not ready"))
+        .stderr(predicate::str::contains("manscript setup"));
 }
 
 #[test]
@@ -200,7 +254,9 @@ fn unknown_framework_fails() {
         .args(["create", "cobol", "nope"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("not a framework ManScript knows"))
+        .stderr(predicate::str::contains(
+            "not a supported framework or language",
+        ))
         .stderr(predicate::str::contains("python"))
         .stderr(predicate::str::contains("django"));
 }
@@ -211,7 +267,9 @@ fn create_none_is_not_a_cli_alias() {
         .args(["create", "none", "nope"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("not a framework ManScript knows"));
+        .stderr(predicate::str::contains(
+            "not a supported framework or language",
+        ));
 }
 
 #[test]
@@ -220,9 +278,37 @@ fn unknown_subcommand_is_friendly() {
         .arg("docter")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("There is no command like"))
-        .stderr(predicate::str::contains("manscript -h"))
+        .stderr(predicate::str::contains(
+            "`docter` is not a ManScript command",
+        ))
+        .stderr(predicate::str::contains("manscript --help"))
         .stderr(predicate::str::contains("manscript doctor"));
+}
+
+#[test]
+fn clap_errors_use_the_manscript_error_layout() {
+    bin()
+        .args(["completions", "unsupported-shell"])
+        .assert()
+        .code(2)
+        .stdout(predicate::str::is_empty())
+        .stderr(predicate::str::contains(
+            "ManScript could not complete that request",
+        ))
+        .stderr(predicate::str::contains("invalid value"))
+        .stderr(predicate::str::contains("--help"));
+}
+
+#[test]
+fn no_color_help_contains_no_escape_sequences() {
+    bin()
+        .env("NO_COLOR", "1")
+        .env("TERM", "dumb")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Available commands:"))
+        .stdout(predicate::str::contains("\u{1b}").not());
 }
 
 #[test]

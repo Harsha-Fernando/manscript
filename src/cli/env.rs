@@ -12,26 +12,25 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     let has_framework = project.config.framework.is_some();
 
     printer.info("This project");
-    printer.line(&format!("  Name        {}", project.config.name));
-    printer.line(&format!("  Root        {}", project.root.display()));
-    printer.line(&format!(
-        "  Language    {} {}",
-        project.language(),
-        project.language_version()
-    ));
+    printer.key_value("Name", &project.config.name);
+    printer.key_value("Root", &project.root.display().to_string());
+    printer.key_value(
+        "Language",
+        &format!("{} {}", project.language(), project.language_version()),
+    );
     if let Some(fw) = &project.config.framework {
-        printer.line(&format!("  Framework   {} {}", fw.name, fw.version));
+        printer.key_value("Framework", &format!("{} {}", fw.name, fw.version));
     }
-    printer.line(&format!(
-        "  Environment {}",
-        project.environment_dir().display()
-    ));
-    printer.line(&format!(
-        "  Tool bin    {}",
-        project.environment_bin_dir().display()
-    ));
+    printer.key_value(
+        "Environment",
+        &project.environment_dir().display().to_string(),
+    );
+    printer.key_value(
+        "Tool bin",
+        &project.environment_bin_dir().display().to_string(),
+    );
     if let Some(p) = &project.config.runtime.provider {
-        printer.line(&format!("  Provider    {p}"));
+        printer.key_value("Provider", p);
     }
 
     if has_framework {
@@ -69,7 +68,7 @@ pub fn execute(registry: &AdapterRegistry) -> Result<()> {
     printer.blank();
     if let Some(lang) = lang {
         if lang.environment_ready(&project) {
-            printer.success("Environment is ready. You may now write code of questionable wisdom.");
+            printer.success("The project environment is ready.");
         } else {
             printer.info("Environment is not ready yet.");
             printer.hint_command("manscript setup");
